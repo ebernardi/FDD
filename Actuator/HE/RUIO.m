@@ -365,82 +365,64 @@ W6 = lmivar(2, [n p]);
 W7 = lmivar(2, [n p]);
 W8 = lmivar(2, [n p]);
 W9 = lmivar(2, [n p]);
-alpha = lmivar(1, [n 0]);
+alpha = -0.1;
 
 % LMI #1: X > 0
 lmiterm([-1 1 1 X], 1, 1);                  % LMI #1: X
 
 % LMI #2: M < 0
-% lmiterm([2 1 1 X], -1, 1);  % LMI #2: -X; −left hand side
-lmiterm([2 1 1 alpha], 2, X);  % LMI #2: 2*alpha*X; −left hand side
-lmiterm([2 2 1 W1], -1, H1_C1_tilde_1); % LMI #2: -W1*H1_C1_tilde_1; −left hand side
-lmiterm([2 2 1 X], 1, H1_A1_tilde_1); % LMI #2: X*H1_A1_tilde_1; −left hand side
-% lmiterm([2 2 2 X], -1, 1);  % LMI #2: -X; −left hand side
-lmiterm([2 2 2 alpha], 2, X);  % LMI #2: 2*alpha*X; −left hand side
+lmiterm([2 1 1 X], 2*alpha, 1);  % LMI #2: 2*alpha*X; −left hand side
+lmiterm([2 2 1 W1], -1, H1_C1_tilde_1, 's'); % LMI #2: -W1*H1_C1_tilde_1; −left hand side
+lmiterm([2 2 1 X], 1, H1_A1_tilde_1, 's'); % LMI #2: X*H1_A1_tilde_1; −left hand side
+lmiterm([2 2 2 X], 2*alpha, 1);  % LMI #2: 2*alpha*X; −left hand side
 
 % LMI #3: M < 0
-% lmiterm([3 1 1 X], -1, 1);  % LMI #3: -X; −left hand side
-lmiterm([3 1 1 alpha], 2, X);  % LMI #3: 2*alpha*X; −left hand side
-lmiterm([3 2 1 W2], -1, H1_C2_tilde_1); % LMI #3: -W1*H1_C2_tilde_1; −left hand side
-lmiterm([3 2 1 X], 1, H1_A2_tilde_1); % LMI #3: X*H1_A2_tilde_1; −left hand side
-% lmiterm([3 2 2 X], -1, 1);  % LMI #3: -X; −left hand side
-lmiterm([3 2 2 alpha], 2, X);  % LMI #3: 2*alpha*X; −left hand side
+lmiterm([3 1 1 X], 2*alpha, 1);  % LMI #3: 2*alpha*X; −left hand side
+lmiterm([3 2 1 W2], -1, H1_C2_tilde_1, 's'); % LMI #3: -W1*H1_C2_tilde_1; −left hand side
+lmiterm([3 2 1 X], 1, H1_A2_tilde_1, 's'); % LMI #3: X*H1_A2_tilde_1; −left hand side
+lmiterm([3 2 2 X], 2*alpha, 1);  % LMI #3: 2*alpha*X; −left hand side
 
 % LMI #4: M < 0
-% lmiterm([4 1 1 X], -1, 1);  % LMI #4: -X; −left hand side
-lmiterm([4 1 1 alpha], 2, X);  % LMI #4: 2*alpha*X; −left hand side
-lmiterm([4 2 1 W3], -1, H1_C3_tilde_1); % LMI #4: -W1*H1_C3_tilde_1; −left hand side
-lmiterm([4 2 1 X], 1, H1_A3_tilde_1); % LMI #4: X*H1_A3_tilde_1; −left hand side
-% lmiterm([4 2 2 X], -1, 1);  % LMI #4: -X; −left hand side
-lmiterm([4 2 2 alpha], 2, X);  % LMI #4: 2*alpha*X; −left hand side
+lmiterm([4 1 1 X], 2*alpha, 1);  % LMI #4: 2*alpha*X; −left hand side
+lmiterm([4 2 1 W3], -1, H1_C3_tilde_1, 's'); % LMI #4: -W1*H1_C3_tilde_1; −left hand side
+lmiterm([4 2 1 X], 1, H1_A3_tilde_1, 's'); % LMI #4: X*H1_A3_tilde_1; −left hand side
+lmiterm([4 2 2 X], 2*alpha, 1);  % LMI #4: 2*alpha*X; −left hand side
 
 % LMI #5: M < 0
-% lmiterm([5 1 1 X], -1, 1);  % LMI #5: -X; −left hand side
-lmiterm([5 1 1 alpha], 2, X);  % LMI #5: 2*alpha*X; −left hand side
-lmiterm([5 2 1 W4], -1, H1_C4_tilde_1); % LMI #5: -W1*H1_C4_tilde_1; −left hand side
-lmiterm([5 2 1 X], 1, H1_A4_tilde_1); % LMI #5: X*H1_A4_tilde_1; −left hand side
-% lmiterm([5 2 2 X], -1, 1);  % LMI #5: -X; −left hand side
-lmiterm([5 2 2 alpha], 2, X);  % LMI #5: 2*alpha*X; −left hand side
+lmiterm([5 1 1 X], 2*alpha, 1);  % LMI #5: 2*alpha*X; −left hand side
+lmiterm([5 2 1 W4], -1, H1_C4_tilde_1, 's'); % LMI #5: -W1*H1_C4_tilde_1; −left hand side
+lmiterm([5 2 1 X], 1, H1_A4_tilde_1, 's'); % LMI #5: X*H1_A4_tilde_1; −left hand side
+lmiterm([5 2 2 X], 2*alpha, 1);  % LMI #5: 2*alpha*X; −left hand side
 
 % LMI #6: M < 0
-% lmiterm([6 1 1 X], -1, 1);  % LMI #6: -X; −left hand side
-lmiterm([6 1 1 alpha], 2, X);  % LMI #6: 2*alpha*X; −left hand side
-lmiterm([6 2 1 W5], -1, H1_C5_tilde_1); % LMI #6: -W1*H1_C5_tilde_1; −left hand side
-lmiterm([6 2 1 X], 1, H1_A5_tilde_1); % LMI #6: X*H1_A5_tilde_1; −left hand side
-% lmiterm([6 2 2 X], -1, 1);  % LMI #6: -X; −left hand side
-lmiterm([6 2 2 alpha], 2, X);  % LMI #6: 2*alpha*X; −left hand side
+lmiterm([6 1 1 X], 2*alpha, 1);  % LMI #6: 2*alpha*X; −left hand side
+lmiterm([6 2 1 W5], -1, H1_C5_tilde_1, 's'); % LMI #6: -W1*H1_C5_tilde_1; −left hand side
+lmiterm([6 2 1 X], 1, H1_A5_tilde_1, 's'); % LMI #6: X*H1_A5_tilde_1; −left hand side
+lmiterm([6 2 2 X], 2*alpha, 1);  % LMI #6: 2*alpha*X; −left hand side
 
 % LMI #7: M < 0
-% lmiterm([7 1 1 X], -1, 1);  % LMI #7: -X; −left hand side
-lmiterm([7 1 1 alpha], 2, X);  % LMI #7: 2*alpha*X; −left hand side
-lmiterm([7 2 1 W6], -1, H1_C6_tilde_1); % LMI #7: -W1*H1_C6_tilde_1; −left hand side
-lmiterm([7 2 1 X], 1, H1_A6_tilde_1); % LMI #7: X*H1_A6_tilde_1; −left hand side
-% lmiterm([7 2 2 X], -1, 1);  % LMI #7: -X; −left hand side
-lmiterm([7 2 2 alpha], 2, X);  % LMI #7: 2*alpha*X; −left hand side
+lmiterm([7 1 1 X], 2*alpha, 1);  % LMI #7: 2*alpha*X; −left hand side
+lmiterm([7 2 1 W6], -1, H1_C6_tilde_1, 's'); % LMI #7: -W1*H1_C6_tilde_1; −left hand side
+lmiterm([7 2 1 X], 1, H1_A6_tilde_1, 's'); % LMI #7: X*H1_A6_tilde_1; −left hand side
+lmiterm([7 2 2 X], 2*alpha, 1);  % LMI #7: 2*alpha*X; −left hand side
 
 % LMI #8: M < 0
-% lmiterm([8 1 1 X], -1, 1);  % LMI #8: -X; −left hand side
-lmiterm([8 1 1 alpha], 2, X);  % LMI #8: 2*alpha*X; −left hand side
-lmiterm([8 2 1 W7], -1, H1_C7_tilde_1); % LMI #8: -W1*H1_C7_tilde_1; −left hand side
-lmiterm([8 2 1 X], 1, H1_A7_tilde_1); % LMI #8: X*H1_A7_tilde_1; −left hand side
-% lmiterm([8 2 2 X], -1, 1);  % LMI #8: -X; −left hand side
-lmiterm([8 2 2 alpha], 2, X);  % LMI #8: 2*alpha*X; −left hand side
+lmiterm([8 1 1 X], 2*alpha, 1);  % LMI #8: 2*alpha*X; −left hand side
+lmiterm([8 2 1 W7], -1, H1_C7_tilde_1, 's'); % LMI #8: -W1*H1_C7_tilde_1; −left hand side
+lmiterm([8 2 1 X], 1, H1_A7_tilde_1, 's'); % LMI #8: X*H1_A7_tilde_1; −left hand side
+lmiterm([8 2 2 X], 2*alpha, 1);  % LMI #8: 2*alpha*X; −left hand side
 
 % LMI #9: M < 0
-% lmiterm([9 1 1 X], -1, 1);  % LMI #9: -X; −left hand side
-lmiterm([9 1 1 alpha], 2, X);  % LMI #9: 2*alpha*X; −left hand side
-lmiterm([9 2 1 W8], -1, H1_C8_tilde_1); % LMI #9: -W1*H1_C8_tilde_1; −left hand side
-lmiterm([9 2 1 X], 1, H1_A8_tilde_1); % LMI #9: X*H1_A8_tilde_1; −left hand side
-% lmiterm([9 2 2 X], -1, 1);  % LMI #9: -X; −left hand side
-lmiterm([9 2 2 alpha], 2, X);  % LMI #9: 2*alpha*X; −left hand side
+lmiterm([9 1 1 X], 2*alpha, 1);  % LMI #9: 2*alpha*X; −left hand side
+lmiterm([9 2 1 W8], -1, H1_C8_tilde_1, 's'); % LMI #9: -W1*H1_C8_tilde_1; −left hand side
+lmiterm([9 2 1 X], 1, H1_A8_tilde_1, 's'); % LMI #9: X*H1_A8_tilde_1; −left hand side
+lmiterm([9 2 2 X], 2*alpha, 1);  % LMI #9: 2*alpha*X; −left hand side
 
 % LMI #10: M < 0
-% lmiterm([10 1 1 X], -1, 1);  % LMI #10: -X; −left hand side
-lmiterm([10 1 1 alpha], 2, X);  % LMI #10: 2*alpha*X; −left hand side
-lmiterm([10 2 1 W9], -1, H1_C9_tilde_1); % LMI #10: -W1*H1_C9_tilde_1; −left hand side
-lmiterm([10 2 1 X], 1, H1_A9_tilde_1); % LMI #10: X*H1_A9_tilde_1; −left hand side
-% lmiterm([10 2 2 X], -1, 1);  % LMI #10: -X; −left hand side
-lmiterm([10 2 2 alpha], 2, X);  % LMI #10: 2*alpha*X; −left hand side
+lmiterm([10 1 1 X], 2*alpha, 1);  % LMI #10: 2*alpha*X; −left hand side
+lmiterm([10 2 1 W9], -1, H1_C9_tilde_1, 's'); % LMI #10: -W1*H1_C9_tilde_1; −left hand side
+lmiterm([10 2 1 X], 1, H1_A9_tilde_1, 's'); % LMI #10: X*H1_A9_tilde_1; −left hand side
+lmiterm([10 2 2 X], 2*alpha, 1);  % LMI #10: 2*alpha*X; −left hand side
 
 LMIs = getlmis;
 
@@ -853,82 +835,64 @@ W6 = lmivar(2, [n p]);
 W7 = lmivar(2, [n p]);
 W8 = lmivar(2, [n p]);
 W9 = lmivar(2, [n p]);
-alpha = lmivar(1, [n 0]);
+alpha = -0.1;
 
 % LMI #1: X > 0
 lmiterm([-1 1 1 X], 1, 1);  % X
 
 % LMI #2: M < 0
-% lmiterm([2 1 1 X], -1, 1);  % LMI #2: -X; −left hand side
-lmiterm([2 1 1 alpha], 2, X);  % LMI #2: 2*alpha*X; −left hand side
-lmiterm([2 2 1 W1], -1, H2_C1_tilde_1); % LMI #2: -W1*H2_C1_tilde_1; −left hand side
-lmiterm([2 2 1 X], 1, H2_A1_tilde_1); % LMI #2: X*H2_A1_tilde_1; −left hand side
-% lmiterm([2 2 2 X], -1, 1);  % LMI #2: -X; −left hand side
-lmiterm([2 2 2 alpha], 2, X);  % LMI #2: 2*alpha*X; −left hand side
+lmiterm([2 1 1 X], 2*alpha, 1);  % LMI #2: 2*alpha*X; −left hand side
+lmiterm([2 2 1 W1], -1, H2_C1_tilde_1, 's'); % LMI #2: -W1*H2_C1_tilde_1; −left hand side
+lmiterm([2 2 1 X], 1, H2_A1_tilde_1, 's'); % LMI #2: X*H2_A1_tilde_1; −left hand side
+lmiterm([2 2 2 X], 2*alpha, 1);  % LMI #2: 2*alpha*X; −left hand side
 
 % LMI #3: M < 0
-% lmiterm([3 1 1 X], -1, 1);  % LMI #3: -X; −left hand side
-lmiterm([3 1 1 alpha], 2, X);  % LMI #3: 2*alpha*X; −left hand side
-lmiterm([3 2 1 W2], -1, H2_C2_tilde_1); % LMI #3: -W2*H2_C2_tilde_1; −left hand side
-lmiterm([3 2 1 X], 1, H2_A2_tilde_1); % LMI #3: X*H2_A2_tilde_1; −left hand side
-% lmiterm([3 2 2 X], -1, 1);  % LMI #3: -X; −left hand side
-lmiterm([3 2 2 alpha], 2, X);  % LMI #3: 2*alpha*X; −left hand side
+lmiterm([3 1 1 X], 2*alpha, 1);  % LMI #3: 2*alpha*X; −left hand side
+lmiterm([3 2 1 W2], -1, H2_C2_tilde_1, 's'); % LMI #3: -W2*H2_C2_tilde_1; −left hand side
+lmiterm([3 2 1 X], 1, H2_A2_tilde_1, 's'); % LMI #3: X*H2_A2_tilde_1; −left hand side
+lmiterm([3 2 2 X], 2*alpha, 1);  % LMI #3: 2*alpha*X; −left hand side
 
 % LMI #4: M < 0
-% lmiterm([4 1 1 X], -1, 1);  % LMI #4: -X; −left hand side
-lmiterm([4 1 1 alpha], 2, X);  % LMI #4: 2*alpha*X; −left hand side
-lmiterm([4 2 1 W3], -1, H2_C3_tilde_1); % LMI #4: -W3*H2_C3_tilde_1; −left hand side
-lmiterm([4 2 1 X], 1, H2_A3_tilde_1); % LMI #4: X*H2_A3_tilde_1; −left hand side
-% lmiterm([4 2 2 X], -1, 1);  % LMI #4: -X; −left hand side
-lmiterm([4 2 2 alpha], 2, X);  % LMI #4: 2*alpha*X; −left hand side
+lmiterm([4 1 1 X], 2*alpha, 1);  % LMI #4: 2*alpha*X; −left hand side
+lmiterm([4 2 1 W3], -1, H2_C3_tilde_1, 's'); % LMI #4: -W3*H2_C3_tilde_1; −left hand side
+lmiterm([4 2 1 X], 1, H2_A3_tilde_1, 's'); % LMI #4: X*H2_A3_tilde_1; −left hand side
+lmiterm([4 2 2 X], 2*alpha, 1);  % LMI #4: 2*alpha*X; −left hand side
 
 % LMI #5: M < 0
-% lmiterm([5 1 1 X], -1, 1);  % LMI #5: -X; −left hand side
-lmiterm([5 1 1 alpha], 2, X);  % LMI #5: 2*alpha*X; −left hand side
-lmiterm([5 2 1 W4], -1, H2_C4_tilde_1); % LMI #5: -W4*H2_C4_tilde_1; −left hand side
-lmiterm([5 2 1 X], 1, H2_A4_tilde_1); % LMI #5: X*H2_A4_tilde_1; −left hand side
-% lmiterm([5 2 2 X], -1, 1);  % LMI #5: -X; −left hand side
-lmiterm([5 2 2 alpha], 2, X);  % LMI #5: 2*alpha*X; −left hand side
+lmiterm([5 1 1 X], 2*alpha, 1);  % LMI #5: 2*alpha*X; −left hand side
+lmiterm([5 2 1 W4], -1, H2_C4_tilde_1, 's'); % LMI #5: -W4*H2_C4_tilde_1; −left hand side
+lmiterm([5 2 1 X], 1, H2_A4_tilde_1, 's'); % LMI #5: X*H2_A4_tilde_1; −left hand side
+lmiterm([5 2 2 X], 2*alpha, 1);  % LMI #5: 2*alpha*X; −left hand side
 
 % LMI #6: M < 0
-% lmiterm([6 1 1 X], -1, 1);  % LMI #6: -X; −left hand side
-lmiterm([6 1 1 alpha], 2, X);  % LMI #6: 2*alpha*X; −left hand side
-lmiterm([6 2 1 W5], -1, H2_C5_tilde_1); % LMI #6: -W5*H2_C5_tilde_1; −left hand side
-lmiterm([6 2 1 X], 1, H2_A5_tilde_1); % LMI #6: X*H2_A5_tilde_1; −left hand side
-% lmiterm([6 2 2 X], -1, 1);  % LMI #6: -X; −left hand side
-lmiterm([6 2 2 alpha], 2, X);  % LMI #6: 2*alpha*X; −left hand side
+lmiterm([6 1 1 X], 2*alpha, 1);  % LMI #6: 2*alpha*X; −left hand side
+lmiterm([6 2 1 W5], -1, H2_C5_tilde_1, 's'); % LMI #6: -W5*H2_C5_tilde_1; −left hand side
+lmiterm([6 2 1 X], 1, H2_A5_tilde_1, 's'); % LMI #6: X*H2_A5_tilde_1; −left hand side
+lmiterm([6 2 2 X], 2*alpha, 1);  % LMI #6: 2*alpha*X; −left hand side
 
 % LMI #7: M < 0
-% lmiterm([7 1 1 X], -1, 1);  % LMI #7: -X; −left hand side
-lmiterm([7 1 1 alpha], 2, X);  % LMI #7: 2*alpha*X; −left hand side
-lmiterm([7 2 1 W6], -1, H2_C6_tilde_1); % LMI #7: -W6*H2_C6_tilde_1; −left hand side
-lmiterm([7 2 1 X], 1, H2_A6_tilde_1); % LMI #7: X*H2_A6_tilde_1; −left hand side
-% lmiterm([7 2 2 X], -1, 1);  % LMI #7: -X; −left hand side
-lmiterm([7 2 2 alpha], 2, X);  % LMI #7: 2*alpha*X; −left hand side
+lmiterm([7 1 1 X], 2*alpha, 1);  % LMI #7: 2*alpha*X; −left hand side
+lmiterm([7 2 1 W6], -1, H2_C6_tilde_1, 's'); % LMI #7: -W6*H2_C6_tilde_1; −left hand side
+lmiterm([7 2 1 X], 1, H2_A6_tilde_1, 's'); % LMI #7: X*H2_A6_tilde_1; −left hand side
+lmiterm([7 2 2 X], 2*alpha, 1);  % LMI #7: 2*alpha*X; −left hand side
 
 % LMI #8: M < 0
-% lmiterm([8 1 1 X], -1, 1);  % LMI #8: -X; −left hand side
-lmiterm([8 1 1 alpha], 2, X);  % LMI #8: 2*alpha*X; −left hand side
-lmiterm([8 2 1 W7], -1, H2_C7_tilde_1); % LMI #8: -W7*H2_C7_tilde_1; −left hand side
-lmiterm([8 2 1 X], 1, H2_A7_tilde_1); % LMI #8: X*H2_A7_tilde_1; −left hand side
-% lmiterm([8 2 2 X], -1, 1);  % LMI #8: -X; −left hand side
-lmiterm([8 2 2 alpha], 2, X);  % LMI #8: 2*alpha*X; −left hand side
+lmiterm([8 1 1 X], 2*alpha, 1);  % LMI #8: 2*alpha*X; −left hand side
+lmiterm([8 2 1 W7], -1, H2_C7_tilde_1, 's'); % LMI #8: -W7*H2_C7_tilde_1; −left hand side
+lmiterm([8 2 1 X], 1, H2_A7_tilde_1, 's'); % LMI #8: X*H2_A7_tilde_1; −left hand side
+lmiterm([8 2 2 X], 2*alpha, 1);  % LMI #8: 2*alpha*X; −left hand side
 
 % LMI #9: M < 0
-% lmiterm([9 1 1 X], -1, 1);  % LMI #9: -X; −left hand side
-lmiterm([9 1 1 alpha], 2, X);  % LMI #9: 2*alpha*X; −left hand side
-lmiterm([9 2 1 W8], -1, H2_C8_tilde_1); % LMI #9: -W8*H2_C8_tilde_1; −left hand side
-lmiterm([9 2 1 X], 1, H2_A8_tilde_1); % LMI #9: X*H2_A8_tilde_1; −left hand side
-% lmiterm([9 2 2 X], -1, 1);  % LMI #9: -X; −left hand side
-lmiterm([9 2 2 alpha], 2, X);  % LMI #9: 2*alpha*X; −left hand side
+lmiterm([9 1 1 X], 2*alpha, 1);  % LMI #9: 2*alpha*X; −left hand side
+lmiterm([9 2 1 W8], -1, H2_C8_tilde_1, 's'); % LMI #9: -W8*H2_C8_tilde_1; −left hand side
+lmiterm([9 2 1 X], 1, H2_A8_tilde_1, 's'); % LMI #9: X*H2_A8_tilde_1; −left hand side
+lmiterm([9 2 2 X], 2*alpha, 1);  % LMI #9: 2*alpha*X; −left hand side
 
 % LMI #10: M < 0
-% lmiterm([10 1 1 X], -1, 1);  % LMI #10: -X; −left hand side
-lmiterm([10 1 1 alpha], 2, X);  % LMI #10: 2*alpha*X; −left hand side
-lmiterm([10 2 1 W9], -1, H2_C9_tilde_1); % LMI #10: -W9*H2_C9_tilde_1; −left hand side
-lmiterm([10 2 1 X], 1, H2_A9_tilde_1); % LMI #10: X*H2_A9_tilde_1; −left hand side
-% lmiterm([10 2 2 X], -1, 1);  % LMI #10: -X; −left hand side
-lmiterm([10 2 2 alpha], 2, X);  % LMI #10: 2*alpha*X; −left hand side
+lmiterm([10 1 1 X], 2*alpha, 1);  % LMI #10: 2*alpha*X; −left hand side
+lmiterm([10 2 1 W9], -1, H2_C9_tilde_1, 's'); % LMI #10: -W9*H2_C9_tilde_1; −left hand side
+lmiterm([10 2 1 X], 1, H2_A9_tilde_1, 's'); % LMI #10: X*H2_A9_tilde_1; −left hand side
+lmiterm([10 2 2 X], 2*alpha, 1);  % LMI #10: 2*alpha*X; −left hand side
 
 LMIs = getlmis;
 

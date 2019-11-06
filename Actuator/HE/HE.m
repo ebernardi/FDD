@@ -1,5 +1,5 @@
 %% Modelo del Intercambiador de calor
-function out = HE(t, x, u)
+function out = HE(x, u)
 	%
 	% Funcion del Intercambiador de calor
 	%

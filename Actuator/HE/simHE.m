@@ -3,16 +3,19 @@ clc; clear; yalmip('clear');
 close all;
 
 %% Simulation parameters
-Time = 50;                              % Simulation end time 
+Time = 400;                              % Simulation end time 
 Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time
-Fault_1 = [0; 1]; Fault_2 = [-8; 0];          % Fault magnitude
+Fact_1 = [0; -0.6]; Fact_2 = [5; 0];              % Actuator fault magnitude
+Fsen_1 = [-2; 0; 0]; Fsen_2 = [0; 4; 0];	% Sensor fault magnitude
 
 %% Parámetros del PID
 ek = [0; 0]; ek_1 = [0; 0];
-Kr = [0.5 0.5]; 
-Ki = [1.25; 1.25];
+% Kr = [0.5; 0.5]; 
+% Ki = [1.25; 1.25];
+Kr = [-0.25; 1e-1]; 
+Ki = [-1.75; 1.5];
 
 % Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
 options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
@@ -31,34 +34,9 @@ run HE_polytope;
 
 % Start point
 Theta_1s = Theta_1s_min;     % Temperatura de salida de fluido 1 (K)
-Theta_2s = Theta_2s_min;     % Temperatura de salida de fluido 2 (K)
-run HE_linear;
-x0 = [Theta_1s; Theta_2s; Theta_p];
-
-%% MPC controller
-% Parameters
-N = 5;                                     % Prediction horizon
-
-% Model for set-point
-Theta_1s = Theta_1s_mid;     % Temperatura de salida de fluido 1 (K) (set-point) (460)
 Theta_2s = Theta_2s_mid;     % Temperatura de salida de fluido 2 (K)
 run HE_linear;
-xsp = [Theta_1s; Theta_2s; Theta_p];     % Set-point
-
-% Constraints
-xmin = [495; 662; 530];
-xmax = [500; 725; 590];
-umin = [90; 6];
-umax = [110; 10];
-
-% Wheight matrix
-Qx = eye(nx);
-% Qx = diag([1 1 1]);
-%Rx = eye(nu);
-Rx = diag([1 0.1]);
-gamma = 1e2*diag([1e6 1 1]);
-
-run MPC;
+x0 = [Theta_1s; Theta_2s; Theta_p];
 
 %% Reduced-order unknown input observer
 run RUIO;
@@ -68,91 +46,72 @@ M = 9;
 %% Simulation Setup
 U = zeros(nu, Nsim);                   % Control Input
 Ufail = zeros(nu, Nsim);               % Fault control Input
+Ufails = zeros(nu, Nsim);             % Fails
 X = zeros(nx, Nsim+1);               % States
 Y = zeros(ny, Nsim);                    % Measure outputs
+Yfail = zeros(ny, Nsim);                % Fault measure outputs
 mu = zeros(M, Nsim);                  % Membership
+Xsp = zeros(nx, Nsim);                 % Set-point
 
 % Observer 1
 Phi_1 = zeros(nobs, Nsim+1);     % Observer states
 X_UIO1 = zeros(nx, Nsim);           % Estimated states
 Error_1 = zeros(1, Nsim);             % Error
-F1est = zeros(1, Nsim);                % Estimated control Input
+Fact1 = zeros(1, Nsim);                % Estimated control Input
 
 % Observer 2
 Phi_2 = zeros(nobs, Nsim+1);     % Observer states
 X_UIO2 = zeros(nx, Nsim);           % Estimated states
 Error_2 = zeros(1, Nsim);             % Error
-F2est = zeros(1, Nsim);                % Estimated control Input
+Fact2 = zeros(1, Nsim);                % Estimated control Input
 
-% Initial States
-X(:, 1) = xsp;
-Phi_1(:, 1) = xsp(1:nobs);
-Phi_2(:, 1) = xsp(1:nobs);
+% Initial states and inputs
+X(:, 1) = x0;
+Phi_1(:, 1) = x0(1:nobs);
+Phi_2(:, 1) = x0(1:nobs);
+Xsp(:, 1) = x0;
+U(:, 1) = U_lin;
 
-Uff = zeros(nu, 1);
 %% Simulation
 for FTC = 0 % 0 - FTC is off; 1 - FTC is on
 
     for k = 1:Nsim
-
-        % setpoint
-        if k*Ts == 35
-            xsp = x0;
-        end
+        tk = k*Ts; % Simulation time
         
-        %% Calculo el PID
-        ek_1 = ek;
-        ek(1) = (xsp(1) - Y(1, end));
-        ek(2) = (xsp(2) - Y(2, end));
-        u0(1) = 100.2766;
-        u0(2) = 11.4602;
-%         u0(2) = -Kr(2)*Ts*Ki(2)*ek_1(1) + Kr(2)*ek(1) + Y(1, end-1);        
-        U(:, k) = [u0(1); u0(2)];
-
-%         %% Run MPC controller       
-%         [sol, diag] = mpc{X(:, k), xsp, Uff};
-%         if diag
-%             msg = ['Infeasible problem at t = ', num2str(k*Ts)];
-%             disp(msg)
-%             return;
-%         end
-%         U(:, k) = sol{1}; Obj = sol{2};
-
-%         if U(1, k) < umin(1)
-%             U(1, k) = umin(1);
-%         elseif U(1, k) > umax(1)
-%             U(1, k) = umax(1);
-%         end
-%         
-%         if U(2, k) < umin(2)
-%             U(2, k) = umin(2);
-%         elseif U(2, k) > umax(2)
-%             U(2, k) = umax(2);
-%         end
-        
-        %% Fault income
+        %% Actuator fault income
         Ufail(:, k) = U(:, k);      
-        Uff = [0; 0];
+        Ufails(:, k) = [0; 0];
 
-        if (k*Ts > 10) && (k*Ts < 20)
-            Ufail(:, k) = U(:, k) + Fault_1;
-            Uff = Fault_1;
+        if tk > 70 && tk < 120
+            Ufail(:, k) = U(:, k) + Fact_2;
+            Ufails(:, k) = Fact_2;
         end
         
-        if k*Ts > 25
-            Ufail(:, k) = U(:, k) + Fault_2;
-            Uff = Fault_2;
+        if tk > 170 && tk < 200
+            Ufail(:, k) = U(:, k) + Fact_1;
+            Ufails(:, k) = Fact_1;
         end
         
         %% Process simulation with ODE
-        [tsim, x] = ode45(@HE, [0 Ts], X(:, k), options, Ufail(:, k));
+        [tsim, x] = ode45(@(x, u) HE(X(:, k), Ufail(:, k)) , [0 Ts], X(:, k), options);
         X(:, k+1) = x(end, :)';
-        Y(:, k) = C*X(:, k) + D*Ufail(:, k);
+        Y(:, k) = C*X(:, k);
         
-        %% Membership
+        %% Sensor fault income
+        Yfail(:, k) = Y(:, k);
+
+        if tk >280 && tk < 330
+            Yfail(:, k) = Y(:, k) + Fsen_2;
+        end
+
+        if tk > 340 && tk < 370
+            Yfail(:, k) = Y(:, k) + Fsen_1;
+        end
+        
+        %% Output membership
         mu(:, k) = membership(Y(:, k), Theta_1s_min, Theta_1s_mid, Theta_1s_max, Theta_2s_min, Theta_2s_mid, Theta_2s_max);
       
-        %% Observer 1
+        %% LPV-RUIO 1
         Phi_1(:, k+1) = mu(1, k)*(H1_K1*Phi_1(:, k) + H1_L1_ast*Y(:, k) + H1_B1_bar_1*U(:, k) + H1_delta1_bar_1) ...
                               + mu(2, k)*(H1_K2*Phi_1(:, k) + H1_L2_ast*Y(:, k) + H1_B2_bar_1*U(:, k) + H1_delta2_bar_1) ...
                               + mu(3, k)*(H1_K3*Phi_1(:, k) + H1_L3_ast*Y(:, k) + H1_B3_bar_1*U(:, k) + H1_delta3_bar_1) ...
@@ -177,7 +136,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Error_1(k) = sqrt((X_UIO1(1, k)-Y(1, k))^2 + (X_UIO1(2, k)-Y(2, k))^2 + (X_UIO1(3, k)-Y(3, k))^2);
         
         % Fault estimation 1
-        F1est(k) = mu(1, k)*(H1_U1_1*(X(:, k+1) - H1_C1_tilde_1*Phi_1(:, k+1)) + H1_A1_bar_22*H1_U1_1*(H1_C1_tilde_1*Phi_1(:, k) - Y(:, k)) - H1_A1_bar_21*Phi_1(:, k) - H1_B1_bar_2*U(:, k) -  H1_delta1_bar_2) ...
+        Fact1(k) = mu(1, k)*(H1_U1_1*(X(:, k+1) - H1_C1_tilde_1*Phi_1(:, k+1)) + H1_A1_bar_22*H1_U1_1*(H1_C1_tilde_1*Phi_1(:, k) - Y(:, k)) - H1_A1_bar_21*Phi_1(:, k) - H1_B1_bar_2*U(:, k) -  H1_delta1_bar_2) ...
                       + mu(2, k)*(H1_U2_1*(X(:, k+1) - H1_C2_tilde_1*Phi_1(:, k+1)) + H1_A2_bar_22*H1_U2_1*(H1_C2_tilde_1*Phi_1(:, k) - Y(:, k)) - H1_A2_bar_21*Phi_1(:, k) - H1_B2_bar_2*U(:, k) -  H1_delta2_bar_2) ...
                       + mu(3, k)*(H1_U3_1*(X(:, k+1) - H1_C3_tilde_1*Phi_1(:, k+1)) + H1_A3_bar_22*H1_U3_1*(H1_C3_tilde_1*Phi_1(:, k) - Y(:, k)) - H1_A3_bar_21*Phi_1(:, k) - H1_B3_bar_2*U(:, k) -  H1_delta3_bar_2) ...
                       + mu(4, k)*(H1_U4_1*(X(:, k+1) - H1_C4_tilde_1*Phi_1(:, k+1)) + H1_A4_bar_22*H1_U4_1*(H1_C4_tilde_1*Phi_1(:, k) - Y(:, k)) - H1_A4_bar_21*Phi_1(:, k) - H1_B4_bar_2*U(:, k) -  H1_delta4_bar_2) ...
@@ -187,7 +146,13 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu(8, k)*(H1_U8_1*(X(:, k+1) - H1_C8_tilde_1*Phi_1(:, k+1)) + H1_A8_bar_22*H1_U8_1*(H1_C8_tilde_1*Phi_1(:, k) - Y(:, k)) - H1_A8_bar_21*Phi_1(:, k) - H1_B8_bar_2*U(:, k) -  H1_delta8_bar_2) ...
                       + mu(9, k)*(H1_U9_1*(X(:, k+1) - H1_C9_tilde_1*Phi_1(:, k+1)) + H1_A9_bar_22*H1_U9_1*(H1_C9_tilde_1*Phi_1(:, k) - Y(:, k)) - H1_A9_bar_21*Phi_1(:, k) - H1_B9_bar_2*U(:, k) -  H1_delta9_bar_2);
 
-         %% Observer 2
+        if Error_1(k) > 1e-2
+            FQ1 = true;
+        else
+            FQ1 = false;
+        end
+                  
+        %% LPV-RUIO 2
         Phi_2(:, k+1) = mu(1, k)*(H2_K1*Phi_2(:, k) + H2_L1_ast*Y(:, k) + H2_B1_bar_1*U(:, k) + H2_delta1_bar_1) ...
                               + mu(2, k)*(H2_K2*Phi_2(:, k) + H2_L2_ast*Y(:, k) + H2_B2_bar_1*U(:, k) + H2_delta2_bar_1) ...
                               + mu(3, k)*(H2_K3*Phi_2(:, k) + H2_L3_ast*Y(:, k) + H2_B3_bar_1*U(:, k) + H2_delta3_bar_1) ...
@@ -212,7 +177,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Error_2(k) = sqrt((X_UIO2(1, k)-Y(1, k))^2 + (X_UIO2(2, k)-Y(2, k))^2 + (X_UIO2(3, k)-Y(3, k))^2);
         
         % Fault estimation 2
-        F2est(k) = mu(1, k)*(H2_U1_1*(X(:, k+1) - H2_C1_tilde_1*Phi_2(:, k+1)) + H2_A1_bar_22*H2_U1_1*(H2_C1_tilde_1*Phi_2(:, k) - Y(:, k)) - H2_A1_bar_21*Phi_2(:, k) - H2_B1_bar_2*U(:, k) -  H2_delta1_bar_2) ...
+        Fact2(k) = mu(1, k)*(H2_U1_1*(X(:, k+1) - H2_C1_tilde_1*Phi_2(:, k+1)) + H2_A1_bar_22*H2_U1_1*(H2_C1_tilde_1*Phi_2(:, k) - Y(:, k)) - H2_A1_bar_21*Phi_2(:, k) - H2_B1_bar_2*U(:, k) -  H2_delta1_bar_2) ...
                       + mu(2, k)*(H2_U2_1*(X(:, k+1) - H2_C2_tilde_1*Phi_2(:, k+1)) + H2_A2_bar_22*H2_U2_1*(H2_C2_tilde_1*Phi_2(:, k) - Y(:, k)) - H2_A2_bar_21*Phi_2(:, k) - H2_B2_bar_2*U(:, k) -  H2_delta2_bar_2) ...
                       + mu(3, k)*(H2_U3_1*(X(:, k+1) - H2_C3_tilde_1*Phi_2(:, k+1)) + H2_A3_bar_22*H2_U3_1*(H2_C3_tilde_1*Phi_2(:, k) - Y(:, k)) - H2_A3_bar_21*Phi_2(:, k) - H2_B3_bar_2*U(:, k) -  H2_delta3_bar_2) ...
                       + mu(4, k)*(H2_U4_1*(X(:, k+1) - H2_C4_tilde_1*Phi_2(:, k+1)) + H2_A4_bar_22*H2_U4_1*(H2_C4_tilde_1*Phi_2(:, k) - Y(:, k)) - H2_A4_bar_21*Phi_2(:, k) - H2_B4_bar_2*U(:, k) -  H2_delta4_bar_2) ...
@@ -221,6 +186,63 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu(7, k)*(H2_U7_1*(X(:, k+1) - H2_C7_tilde_1*Phi_2(:, k+1)) + H2_A7_bar_22*H2_U7_1*(H2_C7_tilde_1*Phi_2(:, k) - Y(:, k)) - H2_A7_bar_21*Phi_2(:, k) - H2_B7_bar_2*U(:, k) -  H2_delta7_bar_2) ...
                       + mu(8, k)*(H2_U8_1*(X(:, k+1) - H2_C8_tilde_1*Phi_2(:, k+1)) + H2_A8_bar_22*H2_U8_1*(H2_C8_tilde_1*Phi_2(:, k) - Y(:, k)) - H2_A8_bar_21*Phi_2(:, k) - H2_B8_bar_2*U(:, k) -  H2_delta8_bar_2) ...
                       + mu(9, k)*(H2_U9_1*(X(:, k+1) - H2_C9_tilde_1*Phi_2(:, k+1)) + H2_A9_bar_22*H2_U9_1*(H2_C9_tilde_1*Phi_2(:, k) - Y(:, k)) - H2_A9_bar_21*Phi_2(:, k) - H2_B9_bar_2*U(:, k) -  H2_delta9_bar_2);
+
+        if Error_2(k) > 5e-2
+            FQ2 = true;
+        else
+            FQ2 = false;
+        end
+        
+        %% Actuator fault estimation
+        % Actuator fault 1
+        if ~FQ1 && FQ2
+            Fact1(k) = Fact1(k);
+        else
+            Fact1(k) = 0;
+        end
+            
+        % Actuator fault 2
+        if FQ1 && ~FQ2
+            Fact2(k) = Fact2(k);
+        else
+            Fact2(k) = 0;
+        end
+                  
+        %% Setpoint
+        Xsp(1, k) = Theta_1s_mid;
+        Xsp(2, k) = Theta_2s_mid;
+
+        if tk <= 30
+            Xsp(1, k) = Theta_1s_min;
+        elseif tk <= 60
+            Xsp(1, k) = Theta_1s_min+((Theta_1s_mid-Theta_1s_min)*(tk-30)/30);
+        elseif tk <= 130
+            Xsp(1, k) = Theta_1s_mid;
+         elseif tk <= 160
+            Xsp(1, k) = Theta_1s_mid+((Theta_1s_max-Theta_1s_mid)*(tk-130)/30);
+        elseif tk <= 210
+            Xsp(1, k) = Theta_1s_max;
+        elseif tk <= 250
+            Xsp(1, k) = Theta_1s_mid;%ax-((Theta_1s_max-Theta_1s_mid)*(tk-210)/40);
+        end
+        
+        %% PID
+        u0(1) = U(1, k);
+        u0(2) = U(2, k);
+        ek_1 = ek;
+        ek(1) = (Xsp(1, k) - Yfail(1, k));
+        ek(2) = (Xsp(2, k) - Yfail(2, k));
+        % Only calefactor fluid
+%         u0(1) = 100;
+%         u0(2) = u0(2) + Kr(1)*(ek(1) - ek_1(1)) + Ts*Ki(1)*ek(1);
+        % Mixed control
+%         u0(1) = u0(1) + Kr(2)*(ek(2) - ek_1(2)) + Ts*Ki(2)*ek(2);
+%         u0(2) = u0(2) + Kr(1)*(ek(1) - ek_1(1)) + Ts*Ki(1)*ek(1);
+        % Direct control
+        u0(1) = u0(1) + Kr(1)*(ek(1) - ek_1(1)) + Ts*Ki(1)*ek(1);
+        u0(2) = u0(2) + Kr(2)*(ek(2) - ek_1(2)) + Ts*Ki(2)*ek(2);
+        U(:, k+1) = [u0(1); u0(2)];
+
     end
 end
 
@@ -245,32 +267,23 @@ chocolate = [210 105 30]/255;
 
 %% States
 subplot(311)
-%         plot(t, state(1, :), 'b.', tc, y(1, :), 'y-.', t, xsp(1)*ones(length(t)), 'r--', 'LineWidth', 1.5);
-plot(t, xsp(1)*ones(1, length(t)), 'r:', 'LineWidth', 1.5);
+plot(t, Xsp(1, :), 'r:', 'LineWidth', 1.5);
 hold on
 plot(t, Y(1, :), 'b', 'LineWidth', 1.5);
-% plot(t, xmin(1)*ones(length(t)), 'y--')
-% plot(t, xmax(1)*ones(length(t)), 'y--')
-% plot(t, state(1, :), 'b-.', t, x1_hat(1, :), 'g:', t, x2_hat(1, :), 'y:', t, xsp(1)*ones(length(t)), 'r--', 'LineWidth', 1.5);
 xlabel('Time [min]'); ylabel('\theta_1 [K]'); grid on
+axis([0 inf 494 501])
 subplot(312)
-%         plot(t, state(2, :), 'b.', tc, y(2, :), 'y-.', t, xsp(2)*ones(length(t)), 'r--', 'LineWidth', 1.5)
-plot(t, xsp(2)*ones(1, length(t)), 'r:', 'LineWidth', 1.5);
+plot(t, Xsp(2, k), 'r:', 'LineWidth', 1.5);
 hold on
 h(2) = plot(t, Y(2, :), 'b', 'LineWidth', 1.5);
-% plot(t, xmin(2)*ones(length(t)), 'y--')
-% plot(t, xmax(2)*ones(length(t)), 'y--')
-% plot(t, state(2, :), 'b-.', t, x1_hat(2, :), 'g:', t, x2_hat(2, :), 'y:', t, xsp(2)*ones(length(t)), 'r--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('\theta_2 [K]'); grid on
+axis([0 inf 690 700])
 subplot(313)
-%         plot(t, state(3, :), 'b.', tc, y(3, :), 'y-.', t, xsp(3)*ones(length(t)), 'r--', 'LineWidth', 1.5)
-plot(t, xsp(3)*ones(1, length(t)), 'r:', 'LineWidth', 1.5);
+plot(t, Xsp(3, k), 'r:', 'LineWidth', 1.5);
 hold on
 plot(t, Y(3, :), 'b', 'LineWidth', 1.5);   
-% plot(t, xmin(3)*ones(length(t)), 'y--')
-% plot(t, xmax(3)*ones(length(t)), 'y--')
-% plot(t, state(3, :), 'b-.', t, x1_hat(3, :), 'g:', t, x2_hat(3, :), 'y:', t, xsp(3)*ones(length(t)), 'r--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('\theta_p [K]'); grid on
+axis([0 inf 555 565])
 
 %% Error
 figure
@@ -286,15 +299,15 @@ axis([0 inf 0 0.6])
 %% Fault estimation
 figure
 subplot(211)
-stairs(t, F1est, 'b', 'LineWidth', 1.5)
+stairs(t, Fact1, 'b', 'LineWidth', 1.5)
 hold on
-stairs(t, Ufail(1, :) - U(1, :), 'm--', 'LineWidth', 1.5)
+stairs(t, Ufails(1, :), 'm--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('Q_1 [l/min]'); grid on
 axis([0 inf -10 1])
 subplot(212)
-stairs(t, F2est, 'b', 'LineWidth', 1.5)
+stairs(t, Fact2, 'b', 'LineWidth', 1.5)
 hold on
-stairs(t, Ufail(2, :) - U(2, :), 'm--', 'LineWidth', 1.5)
+stairs(t, Ufails(2, :), 'm--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
 axis([0 inf -0.5 1.5])
 
