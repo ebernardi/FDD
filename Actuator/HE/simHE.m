@@ -318,17 +318,16 @@ xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
 axis([0 inf -1 0.1])
 
 %% Membership
-m = reshape(mu, 9, length(t));
 fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1]);
-plot(t, m(1, :), 'Color', naranja, 'linewidth', 1.5); hold on; grid on;
-plot(t, m(2, :), 'Color', azul, 'linewidth', 1.5);
-plot(t, m(3, :), 'k', 'linewidth', 1.5);
-plot(t, m(4, :), 'r', 'linewidth', 1.5);
-plot(t, m(5, :), 'Color', forest_green, 'linewidth', 1.5);
-plot(t, m(6, :), 'Color', bordo, 'linewidth', 1.5);
-plot(t, m(7, :), 'm', 'linewidth', 1.5);
-plot(t, m(8, :), 'Color', violeta, 'linewidth', 1.5);
-plot(t, m(9, :), 'Color', amarillo, 'linewidth', 1.5); hold off;
+plot(t, mu_out(1, :), 'Color', naranja, 'linewidth', 1.5); hold on; grid on;
+plot(t, mu_out(2, :), 'Color', azul, 'linewidth', 1.5);
+plot(t, mu_out(3, :), 'k', 'linewidth', 1.5);
+plot(t, mu_out(4, :), 'r', 'linewidth', 1.5);
+plot(t, mu_out(5, :), 'Color', forest_green, 'linewidth', 1.5);
+plot(t, mu_out(6, :), 'Color', bordo, 'linewidth', 1.5);
+plot(t, mu_out(7, :), 'm', 'linewidth', 1.5);
+plot(t, mu_out(8, :), 'Color', violeta, 'linewidth', 1.5);
+plot(t, mu_out(9, :), 'Color', amarillo, 'linewidth', 1.5); hold off;
 axis([0 inf 0 1]);
 xlabel('Tiempo [min]'); ylabel('\mu_i'); yticks([0 0.2 0.4 0.6 0.8 1]); yticklabels({'0', '0,2', '0,4', '0,6', '0,8', '1'});
 pbaspect([2 1 1]);

@@ -14,8 +14,8 @@ Fsen_1 = [-2; 0; 0]; Fsen_2 = [0; 4; 0];	% Sensor fault magnitude
 ek = [0; 0]; ek_1 = [0; 0];
 % Kr = [0.5; 0.5]; 
 % Ki = [1.25; 1.25];
-Kr = [-0.25; 1e-1]; 
-Ki = [-1.75; 1.5];
+Kr = [-1; 5e-2]; 
+Ki = [-2; 2e-1];
 
 % Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
 options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
@@ -257,11 +257,11 @@ figure
 subplot(211)
 stairs(t, Error1, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_1'); grid on
-axis([0 inf 0 5e-1])
+axis([0 inf 0 6e-3])
 subplot(212)
 stairs(t, Error2, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_2'); grid on
-axis([0 inf 0 6e-4])
+axis([0 inf 0 4])
 
 %% Fault estimation
 figure
