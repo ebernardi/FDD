@@ -1,5 +1,5 @@
 %% HE
-clc; clear; close all;
+clc; clear all; close all;
 yalmip('clear');
 
 %% Simulation parameters
@@ -130,7 +130,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 1
         Error1(k) = sqrt(res1(1, k)^2);
         
-        if Error1(k) > 5e-2
+        if Error1(k) > 5e-4
             FO1 = true;
         else
             FO1 = false;
@@ -156,7 +156,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 2
         Error2(k) = sqrt(res2(2, k)^2);
         
-        if Error2(k) > 5e-7
+        if Error2(k) > 5e-2
             FO2 = true;
         else
             FO2 = false;
