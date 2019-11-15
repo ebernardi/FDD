@@ -130,7 +130,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 1
         Error1(k) = sqrt(res1(1, k)^2);
         
-        if Error1(k) > 5e-4
+        if Error1(k) > 2e-2
             FO1 = true;
         else
             FO1 = false;
@@ -257,7 +257,7 @@ figure
 subplot(211)
 stairs(t, Error1, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_1'); grid on
-axis([0 inf 0 6e-3])
+axis([0 inf 0 5e-1])
 subplot(212)
 stairs(t, Error2, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_2'); grid on
