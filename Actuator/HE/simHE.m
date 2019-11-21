@@ -3,7 +3,7 @@ clc; clear; yalmip('clear');
 close all;
 
 %% Simulation parameters
-Time = 400;                              % Simulation end time 
+Time = 400;                            % Simulation end time 
 Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time

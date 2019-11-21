@@ -1,4 +1,4 @@
-%% HE
+%% CSTR
 clc; clear all; close all;
 yalmip('clear');
 
@@ -8,7 +8,7 @@ Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time
 Fact_1 = [0; -5]; Fact_2 = [5; 0];              % Actuator fault magnitude
-Fsen_1 = [-3; 0; 0]; Fsen_2 = [0; 0; -5];	% Sensor fault magnitude
+Fsen_1 = [-5; 0; 0]; Fsen_2 = [0; 0; -3];	% Sensor fault magnitude
 
 %% Parámetros del PID
 ek = [0; 0]; ek_1 = [0; 0];
@@ -18,19 +18,19 @@ Kr = [-2; -2];
 Ki = [-1.5; -1.5];
 
 % Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
-options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
+options = odeset ('RelTol', 1e-12, 'AbsTol', 1e-12, ...
 	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
 
 %% Polytope model
 V_min = 90;		% Volumen mínimo (m^3)
 V_mid = 100;	% Volumen medio (m^3)
-V_max = 110;	% Volumen máximo (m^3) 
+V_max = 110;	% Volumen máximo (m^3)
 % CA_min = 0.06;	% Concentración mínima (mol/l)
 % CA_mid = 0.087;	% Concentración media (mol/l)
 % CA_max = 0.12;	% Concentración máxima (mol/l)
 Tr_min = 434;	% Temperatura mínima (°K)
 Tr_mid = 441.5;	% Temperatura media (°K)
-Tr_max = 450;	% Temperatura máxima (°K) 
+Tr_max = 450;	% Temperatura máxima (°K)
 
 run CSTR_polytope;
 
@@ -133,7 +133,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 1
         Error1(k) = sqrt(res1(2, k)^2);
         
-        if Error1(k) > 8e-5
+        if Error1(k) > 3e-5
             FO1(k) = true;
         else
             FO1(k) = false;
@@ -245,7 +245,7 @@ hold on
 plot(t, Y(1, :), 'b', 'LineWidth', 1.5);
 plot(t, Yfail(1, :), 'g--', 'LineWidth', 1.5);
 xlabel('Time [min]'); ylabel('V [l]'); grid on; hold off
-axis([0 inf 95 105])
+axis([0 inf 90 110])
 subplot(312)
 plot(t, Y(2, :), 'b', 'LineWidth', 1.5);
 hold on
@@ -278,13 +278,13 @@ stairs(t, Fsen1, 'b', 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(1, :) - Y(1, :), 'm--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('\Theta_1 [K]'); grid on
-axis([0 inf -3.5 0.5])
+axis([0 inf -5.5 0.5])
 subplot(212)
 stairs(t, Fsen2, 'b', 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(3, :) - Y(3, :), 'm--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('\Theta_2 [K]'); grid on
-axis([0 inf -5.5 0.5])
+axis([0 inf -3.5 0.5])
 
 %% Membership
 fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1]);
