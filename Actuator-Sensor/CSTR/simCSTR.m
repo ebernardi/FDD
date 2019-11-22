@@ -8,7 +8,7 @@ Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time
 Fact_1 = [0; -5]; Fact_2 = [5; 0];              % Actuator fault magnitude
-Fsen_1 = [-1; 0; 0]; Fsen_2 = [0; 0; -3];	% Sensor fault magnitude
+Fsen_1 = [-1; 0; 0]; Fsen_2 = [0; 0; -4];	% Sensor fault magnitude
 
 %% Parámetros del PID
 ek = [0; 0]; ek_1 = [0; 0];
@@ -30,7 +30,7 @@ V_max = 110;	% Volumen máximo (m^3)
 % CA_max = 0.12;	% Concentración máxima (mol/l)
 Tr_min = 440;	% Temperatura mínima (°K)
 Tr_mid = 445;	% Temperatura media (°K)
-Tr_max = 450;	% Temperatura máxima (°K)
+Tr_max = 450;  % Temperatura máxima (°K)
 
 run CSTR_polytope;
 M = 9;
@@ -108,7 +108,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Ufail(:, k) = U(:, k);      
         Ufails(:, k) = [0; 0];
 
-        if tk > 70 && tk < 120
+        if tk > 30 && tk < 60
             Ufail(:, k) = U(:, k) + Fact_2;
             Ufails(:, k) = Fact_2;
         end
@@ -174,9 +174,9 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu_out(9, k)*(H1_U9_1*(X(:, k+1) - H1_C9_tilde_1*Phi_1(:, k+1)) + H1_A9_bar_22*H1_U9_1*(H1_C9_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A9_bar_21*Phi_1(:, k) - H1_B9_bar_2*U(:, k) -  H1_delta9_bar_2);
 
         if Error_1(k) > 1e-1
-            FQ1 = true;
+            FQ1(k) = true;
         else
-            FQ1 = false;
+            FQ1(k) = false;
         end
                   
         %% LPV-RUIO 2
@@ -215,9 +215,9 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu_out(9, k)*(H2_U9_1*(X(:, k+1) - H2_C9_tilde_1*Phi_2(:, k+1)) + H2_A9_bar_22*H2_U9_1*(H2_C9_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A9_bar_21*Phi_2(:, k) - H2_B9_bar_2*U(:, k) -  H2_delta9_bar_2);
 
         if Error_2(k) > 1e-2
-            FQ2 = true;
+            FQ2(k) = true;
         else
-            FQ2 = false;
+            FQ2(k) = false;
         end
         
         %% DLPV-UIOO 1
@@ -240,10 +240,10 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 1
         Error1(k) = sqrt(res1(2, k)^2);
         
-        if Error1(k) > 1e-5
-            FO1 = true;
+        if Error1(k) > 9e-6
+            FO1(k) = true;
         else
-            FO1 = false;
+            FO1(k) = false;
         end
             
         %% DLPV-UIOO 2
@@ -266,49 +266,37 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 2
         Error2(k) = sqrt(res2(3, k)^2);
         
-        if Error2(k) > 1e-2
-            FO2 = true;
+        if Error2(k) > 1e-6
+            FO2(k) = true;
         else
-            FO2 = false;
+            FO2(k) = false;
         end
 
         %% Actuator fault estimation
         % Actuator fault 1
-        if ~FQ1 && FQ2 && ~FO1 && ~FO2
-            if delay_1
-                Fact1(k) = Fact1(k);
-            else
-                delay_1 = 1;
-                Fact1(k) = 0;
-            end
+        if ~FQ1(k) && FQ2(k) && ~FO1(k) && FO2(k)
+            Fact1(k) = Fact1(k);
         else
-            delay_1 = 0;
             Fact1(k) = 0;
         end
             
         % Actuator fault 2
-        if FQ1 && ~FQ2 && FO1 && FO2
-            if delay_2
-                Fact2(k) = Fact2(k);
-            else
-                delay_2 = 1;
-                Fact2(k) = 0;
-            end
+        if FQ1(k) && ~FQ2(k) && FO1(k) && FO2(k)
+            Fact2(k) = Fact2(k);
         else
-            delay_2 = 0;
             Fact2(k) = 0;
         end
         
         %% Sensor fault estimation
         % Sensor fault 1
-        if ~FQ1 && ~FQ2 && FO1 && ~FO2
+        if ~FQ1(k) && ~FQ2(k) && FO1(k) && ~FO2(k)
             Fsen1(k) = res2(1, k);
         else
             Fsen1(k) = zeros(size(res2(1, k)));
         end
         
         % Sensor fault 2
-        if FQ1 && ~FQ2 && ~FO1 && FO2
+        if FQ1(k) && ~FQ2(k) && ~FO1(k) && FO2(k)
             Fsen2(k) = res1(3, k);
         else
             Fsen2(k) = zeros(size(res1(3, k)));
@@ -324,10 +312,12 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
             Xsp(3, k) = Tr_min+((Tr_mid-Tr_min)*(tk-10)/15);
         elseif tk <= 65
            Xsp(3, k) = Tr_mid;   
-        elseif tk <= 80
-            Xsp(3, k) = Tr_mid+((Tr_max-Tr_mid)*(tk-65)/15);
-        elseif tk <= 95
-           Xsp(1, k) = V_min;%+((V_mid-V_min)*(tk-80)/15);
+        elseif tk <= 100
+            Xsp(3, k) = Tr_mid+((Tr_max-Tr_mid)*(tk-65)/35);
+        elseif tk <= 120
+            Xsp(3, k) = Tr_max-((Tr_max-Tr_mid)*(tk-100)/20);
+%         elseif tk <= 120
+%            Xsp(1, k) = V_min+((V_mid-V_min)*(tk-80)/15);
         elseif tk <= 135
            Xsp(1, k) = V_mid;   
         elseif tk <= 150
@@ -393,22 +383,22 @@ figure
 subplot(211)
 stairs(t, Error_1, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|'); grid on
-axis([0 inf 0 3.5])
+axis([0 inf 0 0.4])
 subplot(212)
 stairs(t, Error_2, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|'); grid on
-axis([0 inf 0 1])
+axis([0 inf 0 0.3])
 
 %% UIOO error
 figure
 subplot(211)
 stairs(t, Error1, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_1'); grid on
-axis([0 inf 0 6e-3])
+axis([0 inf 0 1.5e-4])
 subplot(212)
 stairs(t, Error2, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_2'); grid on
-axis([0 inf 0 5])
+axis([0 inf 0 8e-5])
 
 %% Actuator fault estimation
 figure
@@ -438,7 +428,7 @@ stairs(t, Fsen2, 'b', 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(3, :) - Y(3, :), 'm--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('\Theta_2 [K]'); grid on
-axis([0 inf -3.5 0.5])
+axis([0 inf -4.5 0.5])
 
 %% Membership
 fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1]);
