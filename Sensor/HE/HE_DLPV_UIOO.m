@@ -91,7 +91,7 @@ const = [LMI_1 <= 0, LMI_2 <= 0, LMI_3 <= 0 ...
                (X+S*J)*F1_9 == 0 ...
                ];
 
-diagnostics = optimize(const);
+diagnostics = solvesdp(const);
 
 string = yalmiperror(diagnostics.problem);
 if diagnostics.problem == 0

@@ -92,7 +92,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
         
         %% Process simulation with ODE
-        [tsim, x] = ode45(@(x, u) HE(X(:, k), Ufail(:, k)) , [0 Ts], X(:, k), options);
+        [tsim, x] = ode45(@(x, u) HE(X(:, k), Ufail(:, k)), [0 Ts], X(:, k), options);
         X(:, k+1) = x(end, :)';
         Y(:, k) = C*X(:, k);
         
