@@ -53,7 +53,7 @@ Xsp = zeros(nx, Nsim);                 % Set-point
 
 % Observer 1
 Z1 = zeros(nx, Nsim+1);              % Observer states
-J1 = zeros(2, Nsim);                      % Monitorated outputs
+Ytilde1 = zeros(p, Nsim);              % Monitorated outputs
 X_UIOO1 = zeros(nx, Nsim);         % Estimated states
 res1 = zeros(nx, Nsim);                % Residue
 Error1 = zeros(1, Nsim);               % Error
@@ -61,7 +61,7 @@ Fsen1 = zeros(1, Nsim);               % Estimated sensor fault
 
 % Observer 2
 Z2 = zeros(nx, Nsim+1);              % Observer states
-J2 = zeros(2, Nsim);                      % Monitorated outputs
+Ytilde2 = zeros(p, Nsim);              % Monitorated outputs
 X_UIOO2 = zeros(nx, Nsim);         % Estimated states
 res2 = zeros(nx, Nsim);                % Residue
 Error2 = zeros(1, Nsim);               % Error
@@ -108,27 +108,27 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
         
         %% Output membership
-        mu(:, k) = membership(Y(:, k), Theta_1s_min, Theta_1s_mid, Theta_1s_max, Theta_2s_min, Theta_2s_mid, Theta_2s_max);
+        mu(:, k) = membership(Yfail(:, k), Theta_1s_min, Theta_1s_mid, Theta_1s_max, Theta_2s_min, Theta_2s_mid, Theta_2s_max);
 
         %% DLPV-UIOO 1
-        J1(:, k) = [Yfail(1, k); Yfail(3, k)];
-        Z1(:, k+1) = mu(1, k)*(N1_1*Z1(:, k) + L1_1*J1(:, k) + G1_1*U(:, k) + Tg1_1) ...
-                         + mu(2, k)*(N1_2*Z1(:, k) + L1_2*J1(:, k) + G1_2*U(:, k) + Tg1_2) ...
-                         + mu(3, k)*(N1_3*Z1(:, k) + L1_3*J1(:, k) + G1_3*U(:, k) + Tg1_3) ...
-                         + mu(4, k)*(N1_4*Z1(:, k) + L1_4*J1(:, k) + G1_4*U(:, k) + Tg1_4) ...
-                         + mu(5, k)*(N1_5*Z1(:, k) + L1_5*J1(:, k) + G1_5*U(:, k) + Tg1_5) ...
-                         + mu(6, k)*(N1_6*Z1(:, k) + L1_6*J1(:, k) + G1_6*U(:, k) + Tg1_6) ...
-                         + mu(7, k)*(N1_7*Z1(:, k) + L1_7*J1(:, k) + G1_7*U(:, k) + Tg1_7) ...
-                         + mu(8, k)*(N1_8*Z1(:, k) + L1_8*J1(:, k) + G1_8*U(:, k) + Tg1_8) ...
-                         + mu(9, k)*(N1_9*Z1(:, k) + L1_9*J1(:, k) + G1_9*U(:, k) + Tg1_9);
+        Ytilde1(:, k) = J_1*Yfail(:, k);
+        Z1(:, k+1) = mu(1, k)*(N1_1*Z1(:, k) + L1_1*Ytilde1(:, k) + G1_1*U(:, k) + Tg1_1) ...
+                         + mu(2, k)*(N1_2*Z1(:, k) + L1_2*Ytilde1(:, k) + G1_2*U(:, k) + Tg1_2) ...
+                         + mu(3, k)*(N1_3*Z1(:, k) + L1_3*Ytilde1(:, k) + G1_3*U(:, k) + Tg1_3) ...
+                         + mu(4, k)*(N1_4*Z1(:, k) + L1_4*Ytilde1(:, k) + G1_4*U(:, k) + Tg1_4) ...
+                         + mu(5, k)*(N1_5*Z1(:, k) + L1_5*Ytilde1(:, k) + G1_5*U(:, k) + Tg1_5) ...
+                         + mu(6, k)*(N1_6*Z1(:, k) + L1_6*Ytilde1(:, k) + G1_6*U(:, k) + Tg1_6) ...
+                         + mu(7, k)*(N1_7*Z1(:, k) + L1_7*Ytilde1(:, k) + G1_7*U(:, k) + Tg1_7) ...
+                         + mu(8, k)*(N1_8*Z1(:, k) + L1_8*Ytilde1(:, k) + G1_8*U(:, k) + Tg1_8) ...
+                         + mu(9, k)*(N1_9*Z1(:, k) + L1_9*Ytilde1(:, k) + G1_9*U(:, k) + Tg1_9);
 
-        X_UIOO1(:, k) = Z1(:, k) - E1*J1(:, k);
+        X_UIOO1(:, k) = Z1(:, k) - E1*Ytilde1(:, k);
 
         % Residue 1
         res1(:, k) = Yfail(:, k) - X_UIOO1(:, k);
         
         % Error norm 1
-        Error1(k) = sqrt(res1(1, k)^2);
+        Error1(k) = sqrt(sum(T2_1*res1(:, k).^2));
         
         if Error1(k) > 2e-2
             FO1 = true;
@@ -137,24 +137,24 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
             
         %% DLPV-UIOO 2
-        J2(:, k) = [Yfail(2, k); Yfail(3, k)];
-        Z2(:, k+1) = mu(1, k)*(N2_1*Z2(:, k) + L2_1*J2(:, k) + G2_1*U(:, k) + Tg2_1) ...
-                         + mu(2, k)*(N2_2*Z2(:, k) + L2_2*J2(:, k) + G2_2*U(:, k) + Tg2_2) ...
-                         + mu(3, k)*(N2_3*Z2(:, k) + L2_3*J2(:, k) + G2_3*U(:, k) + Tg2_3) ...
-                         + mu(4, k)*(N2_4*Z2(:, k) + L2_4*J2(:, k) + G2_4*U(:, k) + Tg2_4) ...
-                         + mu(5, k)*(N2_5*Z2(:, k) + L2_5*J2(:, k) + G2_5*U(:, k) + Tg2_5) ...
-                         + mu(6, k)*(N2_6*Z2(:, k) + L2_6*J2(:, k) + G2_6*U(:, k) + Tg2_6) ...
-                         + mu(7, k)*(N2_7*Z2(:, k) + L2_7*J2(:, k) + G2_7*U(:, k) + Tg2_7) ...
-                         + mu(8, k)*(N2_8*Z2(:, k) + L2_8*J2(:, k) + G2_8*U(:, k) + Tg2_8) ...
-                         + mu(9, k)*(N2_9*Z2(:, k) + L2_9*J2(:, k) + G2_9*U(:, k) + Tg2_9);
+        Ytilde2(:, k) = J_2*Yfail(:, k);
+        Z2(:, k+1) = mu(1, k)*(N2_1*Z2(:, k) + L2_1*Ytilde2(:, k) + G2_1*U(:, k) + Tg2_1) ...
+                         + mu(2, k)*(N2_2*Z2(:, k) + L2_2*Ytilde2(:, k) + G2_2*U(:, k) + Tg2_2) ...
+                         + mu(3, k)*(N2_3*Z2(:, k) + L2_3*Ytilde2(:, k) + G2_3*U(:, k) + Tg2_3) ...
+                         + mu(4, k)*(N2_4*Z2(:, k) + L2_4*Ytilde2(:, k) + G2_4*U(:, k) + Tg2_4) ...
+                         + mu(5, k)*(N2_5*Z2(:, k) + L2_5*Ytilde2(:, k) + G2_5*U(:, k) + Tg2_5) ...
+                         + mu(6, k)*(N2_6*Z2(:, k) + L2_6*Ytilde2(:, k) + G2_6*U(:, k) + Tg2_6) ...
+                         + mu(7, k)*(N2_7*Z2(:, k) + L2_7*Ytilde2(:, k) + G2_7*U(:, k) + Tg2_7) ...
+                         + mu(8, k)*(N2_8*Z2(:, k) + L2_8*Ytilde2(:, k) + G2_8*U(:, k) + Tg2_8) ...
+                         + mu(9, k)*(N2_9*Z2(:, k) + L2_9*Ytilde2(:, k) + G2_9*U(:, k) + Tg2_9);
 
-        X_UIOO2(:, k) = Z2(:, k) - E2*J2(:, k);
+        X_UIOO2(:, k) = Z2(:, k) - E2*Ytilde2(:, k);
         
         % Residue 2
         res2(:, k) = Yfail(:, k) - X_UIOO2(:, k);
 
         % Error norm 2
-        Error2(k) = sqrt(res2(2, k)^2);
+        Error2(k) = sqrt(sum(T2_2*res2(:, k).^2));
         
         if Error2(k) > 5e-2
             FO2 = true;
@@ -165,14 +165,14 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         %% Sensor fault estimation
         % Sensor fault 1
         if FO1 && ~FO2
-            Fsen1(k) = res2(1, k);
+            Fsen1(k) = sum(H_2*res2(:, k));
         else
             Fsen1(k) = zeros(size(res2(1, k)));
         end
         
         % Sensor fault 2
         if ~FO1 && FO2
-            Fsen2(k) = res1(2, k);
+            Fsen2(k) = sum(H_1*res1(:, k));
         else
             Fsen2(k) = zeros(size(res1(2, k)));
         end
@@ -210,8 +210,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Direct control
         u0(1) = u0(1) + Kr(1)*(ek(1) - ek_1(1)) + Ts*Ki(1)*ek(1);
         u0(2) = u0(2) + Kr(2)*(ek(2) - ek_1(2)) + Ts*Ki(2)*ek(2);
-        U(:, k+1) = [u0(1); u0(2)];
-        
+        U(:, k+1) = [u0(1); u0(2)];        
 	end
 end
 
