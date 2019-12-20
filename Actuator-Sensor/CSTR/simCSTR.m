@@ -1,14 +1,14 @@
 %% CSTR
-clc; clear all; close all;
+clc; clear; close all;
 yalmip('clear');
 
 %% Simulation parameters
-Time = 400;                              % Simulation end time
+Time = 400;                            % Simulation end time
 Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time
 Fact_1 = [0; -5]; Fact_2 = [5; 0];              % Actuator fault magnitude
-Fsen_1 = [-1; 0; 0]; Fsen_2 = [0; 0; -4];	% Sensor fault magnitude
+Fsen_1 = 1; Fsen_2 = 4;	% Sensor fault magnitude
 
 %% Parámetros del PID
 ek = [0; 0]; ek_1 = [0; 0];
@@ -66,12 +66,14 @@ Phi_1 = zeros(nobs, Nsim+1);     % Observer states
 X_UIO1 = zeros(nx, Nsim);           % Estimated states
 Error_1 = zeros(1, Nsim);             % Error
 Fact1 = zeros(1, Nsim);                % Estimated control Input
+FQ1 = zeros(1, Nsim);                  % Fault detect Q1
 
 % RUIO 2
 Phi_2 = zeros(nobs, Nsim+1);     % Observer states
 X_UIO2 = zeros(nx, Nsim);           % Estimated states
 Error_2 = zeros(1, Nsim);             % Error
 Fact2 = zeros(1, Nsim);                % Estimated control Input
+FQ2 = zeros(1, Nsim);                  % Fault detect Q2
 
 % UIOO 1
 Z1 = zeros(nx, Nsim+1);              % Observer states
@@ -80,6 +82,7 @@ X_UIOO1 = zeros(nx, Nsim);         % Estimated states
 res1 = zeros(nx, Nsim);                % Residue
 Error1 = zeros(1, Nsim);               % Error
 Fsen1 = zeros(1, Nsim);               % Estimated sensor fault
+FO1 = zeros(1, Nsim);                  % Fault detect S1
 
 % UIOO 2
 Z2 = zeros(nx, Nsim+1);              % Observer states
@@ -88,6 +91,7 @@ X_UIOO2 = zeros(nx, Nsim);         % Estimated states
 res2 = zeros(nx, Nsim);                % Residue
 Error2 = zeros(1, Nsim);               % Error
 Fsen2 = zeros(1, Nsim);               % Estimated sensor fault
+FO2 = zeros(1, Nsim);                  % Fault detect S2
 
 % Initial states and inputs
 X(:, 1) = x0;
@@ -127,11 +131,23 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Yfail(:, k) = Y(:, k);
 
         if tk >280 && tk < 330
-            Yfail(:, k) = Y(:, k) + Fsen_2;
+            Yfail(:, k) = Y(:, k) +[0; 0; -Fsen_2 + Fsen_2*(exp(-(tk-280)/5))];
         end
+        
+        if tk >= 330 && tk < 340
+            Yfail(:, k) = Y(:, k) + [0; 0; - Fsen_2*(exp(-(tk-330)/3))];
+        end
+        
+%         if tk > 340 && tk < 390
+%             Yfail(:, k) = Y(:, k) + [4*sin((tk-340)/4); 0; 0];
+%         end
 
-        if tk > 340 && tk < 370
-            Yfail(:, k) = Y(:, k) + Fsen_1;
+        if tk > 340 && tk < 390
+            Yfail(:, k) = Y(:, k) + [-Fsen_1 + Fsen_1*(exp(-3*(tk-340)/4)); 0; 0];
+        end
+        
+        if tk >= 390 && tk < 400
+            Yfail(:, k) = Y(:, k) + [- Fsen_1*(exp(-2*(tk-390))); 0; 0];
         end
         
         %% Membership
@@ -214,7 +230,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu_out(8, k)*(H2_U8_1*(X(:, k+1) - H2_C8_tilde_1*Phi_2(:, k+1)) + H2_A8_bar_22*H2_U8_1*(H2_C8_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A8_bar_21*Phi_2(:, k) - H2_B8_bar_2*U(:, k) -  H2_delta8_bar_2) ...
                       + mu_out(9, k)*(H2_U9_1*(X(:, k+1) - H2_C9_tilde_1*Phi_2(:, k+1)) + H2_A9_bar_22*H2_U9_1*(H2_C9_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A9_bar_21*Phi_2(:, k) - H2_B9_bar_2*U(:, k) -  H2_delta9_bar_2);
 
-        if Error_2(k) > 1e-2
+        if Error_2(k) > 6e-4
             FQ2(k) = true;
         else
             FQ2(k) = false;
@@ -240,7 +256,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 1
         Error1(k) = sqrt(res1(2, k)^2);
         
-        if Error1(k) > 9e-6
+        if Error1(k) > 2e-5
             FO1(k) = true;
         else
             FO1(k) = false;
@@ -266,7 +282,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 2
         Error2(k) = sqrt(res2(3, k)^2);
         
-        if Error2(k) > 1e-6
+        if Error2(k) > 4e-4
             FO2(k) = true;
         else
             FO2(k) = false;
@@ -296,7 +312,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
         
         % Sensor fault 2
-        if FQ1(k) && ~FQ2(k) && ~FO1(k) && FO2(k)
+        if FQ1(k) && FQ2(k) && ~FO1(k) && FO2(k)
             Fsen2(k) = res1(3, k);
         else
             Fsen2(k) = zeros(size(res1(3, k)));
@@ -356,7 +372,7 @@ orange_red = [255 69 0]/255; forest_green = [34 139 34]/255; royal_blue = [65 10
 dark_blue = [0 0 139]/255; gold = [255 215 0]/255; chocolate = [210 105 30]/255;
 
 %% States
-figure
+figure('Name', 'States')
 subplot(311)
 plot(t, Xsp(1, :), 'r:', 'LineWidth', 1.5);
 hold on
@@ -379,29 +395,29 @@ xlabel('Time [min]'); ylabel('T [K]'); grid on; hold off
 axis([0 inf 430 460])
 
 %% RUIO error
-figure
+figure('Name', 'RUIO error')
 subplot(211)
 stairs(t, Error_1, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|'); grid on
-axis([0 inf 0 0.4])
+axis([0 inf 0 1.5])
 subplot(212)
 stairs(t, Error_2, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|'); grid on
 axis([0 inf 0 0.3])
 
 %% UIOO error
-figure
+figure('Name', 'UIOO error')
 subplot(211)
 stairs(t, Error1, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_1'); grid on
-axis([0 inf 0 1.5e-4])
+axis([0 inf 0 4e-4])
 subplot(212)
 stairs(t, Error2, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_2'); grid on
-axis([0 inf 0 8e-5])
+axis([0 inf 0 2e-2])
 
 %% Actuator fault estimation
-figure
+figure('Name', 'Actuator fault estimation')
 subplot(211)
 stairs(t, Fact1, 'b', 'LineWidth', 1.5)
 hold on
@@ -416,7 +432,7 @@ xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
 axis([0 inf -5.5 0.1])
 
 %% Sensor fault estimation
-figure
+figure('Name', 'Sensor fault estimation');
 subplot(211)
 stairs(t, Fsen1, 'b', 'LineWidth', 1.5)
 hold on
@@ -431,7 +447,7 @@ xlabel('Time [min]'); ylabel('\Theta_2 [K]'); grid on
 axis([0 inf -4.5 0.5])
 
 %% Membership
-fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1]);
+fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1], 'Name', 'Membership');
 plot(t, mu_out(1, :), 'Color', naranja, 'linewidth', 1.5); hold on; grid on;
 plot(t, mu_out(2, :), 'Color', azul, 'linewidth', 1.5);
 plot(t, mu_out(3, :), 'k', 'linewidth', 1.5);

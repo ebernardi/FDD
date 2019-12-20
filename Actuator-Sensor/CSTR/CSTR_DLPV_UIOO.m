@@ -44,7 +44,7 @@ J_1 = C([1 2], :);
 % Dimension of system matrices
 n = size(A1d, 1);    % n = 3
 k = size(B1d, 2);    % k = 2
-p = size(J_1, 1);      % p = 1
+p = size(J_1, 1);      % p = 2
 
 O_cstr = [J_1' (J_1*A1d)' (J_1*A1d*A1d)']';
 if rank(O_cstr) == n
