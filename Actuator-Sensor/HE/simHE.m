@@ -41,7 +41,7 @@ x0 = [Theta_1s; Theta_2s; Theta_p];
 
 %% Reduced-order unknown input observer
 run RUIO;
-nobs = 2;
+N = 2;
 
 %% Unknown input output observer
 run HE_DLPV_UIOO;
@@ -59,13 +59,13 @@ Xsp = zeros(nx, Nsim);                 % Set-point
 delay_1 = 0; delay_2 = 0;
 
 % RUIO 1
-Phi_1 = zeros(nobs, Nsim+1);     % Observer states
+Phi_1 = zeros(N, Nsim+1);     % Observer states
 X_UIO1 = zeros(nx, Nsim);           % Estimated states
 Error_1 = zeros(1, Nsim);             % Error
 Fact1 = zeros(1, Nsim);                % Estimated control Input
 
 % RUIO 2
-Phi_2 = zeros(nobs, Nsim+1);     % Observer states
+Phi_2 = zeros(N, Nsim+1);     % Observer states
 X_UIO2 = zeros(nx, Nsim);           % Estimated states
 Error_2 = zeros(1, Nsim);             % Error
 Fact2 = zeros(1, Nsim);                % Estimated control Input
@@ -88,8 +88,8 @@ Fsen2 = zeros(1, Nsim);               % Estimated sensor fault
 
 % Initial states and inputs
 X(:, 1) = x0;
-Phi_1(:, 1) = x0(1:nobs);
-Phi_2(:, 1) = x0(1:nobs);
+Phi_1(:, 1) = x0(1:N);
+Phi_2(:, 1) = x0(1:N);
 Z1(:, 1) = x0;
 Z2(:, 1) = x0;
 Xsp(:, 1) = x0;
