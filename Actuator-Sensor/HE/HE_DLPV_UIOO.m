@@ -45,6 +45,7 @@ W8 = sdpvar(n, p);
 W9 = sdpvar(n, p);
 
 alpha = 0.5;
+alpha = 0.1;
 
 % LMI 1
 LMI_1 = [2*alpha*X, (A1d'*X+A1d'*J_1'*S'-J_1'*W1');

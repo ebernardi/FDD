@@ -7,8 +7,14 @@ Time = 400;                              % Simulation end time
 Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time
-Fact_1 = [0; -0.6]; Fact_2 = [5; 0];              % Actuator fault magnitude
-Fsen_1 = [-2; 0; 0]; Fsen_2 = [0; 4; 0];	% Sensor fault magnitude
+Fact_1 = [0; -0.43]; Fact_2 = [5; 0];         % Actuator fault magnitude [5%, 5%]
+Fsen_1 = [-2.5; 0; 0]; Fsen_2 = 3.5;         % Sensor fault magnitude [0.5% 0.5%]
+
+%% Noise
+sig = 3e-3*([1 1 1])';    % Ouput noise sigma
+
+rng default;                        % Random seed start
+v = sig*randn(1, Nsim);    % Measurement noise v~N(0, sig)
 
 %% Parámetros del PID
 ek = [0; 0]; ek_1 = [0; 0];
@@ -118,13 +124,14 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         %% Process simulation with ODE
         [tsim, x] = ode45(@(x, u) HE(X(:, k), Ufail(:, k)) , [0 Ts], X(:, k), options);
         X(:, k+1) = x(end, :)';
-        Y(:, k) = C*X(:, k);
+        Y(:, k) = C*X(:, k)+v(:, k);
         
         %% Sensor fault income
         Yfail(:, k) = Y(:, k);
 
         if tk >280 && tk < 330
-            Yfail(:, k) = Y(:, k) + Fsen_2;
+%             Yfail(:, k) = Y(:, k) +[0; Fsen_2; 0];
+            Yfail(:, k) = Y(:, k) + [0; +Fsen_2 - Fsen_2*(exp(-3*(tk-280)/4)); 0];
         end
 
         if tk > 340 && tk < 370
@@ -170,7 +177,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu_out(8, k)*(H1_U8_1*(X(:, k+1) - H1_C8_tilde_1*Phi_1(:, k+1)) + H1_A8_bar_22*H1_U8_1*(H1_C8_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A8_bar_21*Phi_1(:, k) - H1_B8_bar_2*U(:, k) -  H1_delta8_bar_2) ...
                       + mu_out(9, k)*(H1_U9_1*(X(:, k+1) - H1_C9_tilde_1*Phi_1(:, k+1)) + H1_A9_bar_22*H1_U9_1*(H1_C9_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A9_bar_21*Phi_1(:, k) - H1_B9_bar_2*U(:, k) -  H1_delta9_bar_2);
 
-        if Error_1(k) > 1e-2
+        if Error_1(k) > 2e-1
             FQ1 = true;
         else
             FQ1 = false;
@@ -237,7 +244,8 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         % Error norm 1
         Error1(k) = sqrt(res1(1, k)^2);
         
-        if Error1(k) > 3e-4
+        % if Error1(k) > 3e-4
+        if Error1(k) > 3e-3
             FO1 = true;
         else
             FO1 = false;
@@ -360,6 +368,7 @@ orange_red = [255 69 0]/255; forest_green = [34 139 34]/255; royal_blue = [65 10
 dark_blue = [0 0 139]/255; gold = [255 215 0]/255; chocolate = [210 105 30]/255;
 
 %% States
+figure('Name', 'States')
 subplot(311)
 plot(t, Xsp(1, :), 'r:', 'LineWidth', 1.5);
 hold on
@@ -382,8 +391,19 @@ plot(t, Yfail(3, :), 'g--', 'LineWidth', 1.5);
 xlabel('Time [min]'); ylabel('\theta_p [K]'); grid on
 axis([0 inf 555 565])
 
+%% Manipulated variables
+figure('Name', 'Manipulated variables')
+subplot(211)
+stairs(t, U(1, 1:end-1), 'b', 'LineWidth', 1.5)
+xlabel('Time [min]'); ylabel('Q_1 [l/min]'); grid on
+axis([0 inf 80 120])
+subplot(212)
+stairs(t, U(2, 1:end-1), 'b', 'LineWidth', 1.5)
+xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
+axis([0 inf 8.2 9])
+
 %% RUIO error
-figure
+figure('Name', 'RUIO error')
 subplot(211)
 stairs(t, Error_1, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|'); grid on
@@ -394,18 +414,19 @@ xlabel('Time [min]'); ylabel('|e_x|'); grid on
 axis([0 inf 0 1])
 
 %% UIOO error
-figure
+figure('Name', 'UIOO error')
 subplot(211)
 stairs(t, Error1, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_1'); grid on
-axis([0 inf 0 6e-3])
+% axis([0 inf 0 6e-3])
+axis([0 inf 0 8e-2])
 subplot(212)
 stairs(t, Error2, 'b', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('|e_x|_2'); grid on
 axis([0 inf 0 5])
 
 %% Actuator fault estimation
-figure
+figure('Name', 'Actuator fault estimation')
 subplot(211)
 stairs(t, Fact1, 'b', 'LineWidth', 1.5)
 hold on
@@ -417,25 +438,25 @@ stairs(t, Fact2, 'b', 'LineWidth', 1.5)
 hold on
 stairs(t, Ufails(2, :), 'm--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
-axis([0 inf -1 0.1])
+axis([0 inf -0.5 0.1])
 
 %% Sensor fault estimation
-figure
+figure('Name', 'Sensor fault estimation');
 subplot(211)
 stairs(t, Fsen1, 'b', 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(1, :) - Y(1, :), 'm--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('\Theta_1 [K]'); grid on
-axis([0 inf -3 1])
+axis([0 inf -3 0.5])
 subplot(212)
 stairs(t, Fsen2, 'b', 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(2, :) - Y(2, :), 'm--', 'LineWidth', 1.5)
 xlabel('Time [min]'); ylabel('\Theta_2 [K]'); grid on
-axis([0 inf -1 4])
+axis([0 inf -0.5 4])
 
 %% Membership
-fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1]);
+fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1], 'Name', 'Membership');
 plot(t, mu_out(1, :), 'Color', naranja, 'linewidth', 1.5); hold on; grid on;
 plot(t, mu_out(2, :), 'Color', azul, 'linewidth', 1.5);
 plot(t, mu_out(3, :), 'k', 'linewidth', 1.5);
