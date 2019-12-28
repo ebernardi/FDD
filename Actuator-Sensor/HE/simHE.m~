@@ -51,7 +51,7 @@ rng default;                        % Random seed start
 v = sig*randn(1, Nsim);    % Measurement noise v~N(0, sig)
 
 %% Error detection threshold
-Tau = 10;    % period
+Tau = 5;    % period
 mag_1 = 4e-2;     % Value Q1
 mag_2 = 5e-2;     % Value Q2
 mag_3 = 4e-3;     % Value O1 %3e-4
@@ -154,30 +154,30 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         %% Sensor fault income
         Yfail(:, k) = Y(:, k);
 
-        if tk >380 && tk < 480
-            Yfail(:, k) = Y(:, k) + [0; Fsen_2-Fsen_2*(exp(-(tk-380)/4)); 0];
+        if tk >360 && tk < 460
+            Yfail(:, k) = Y(:, k) + [0; Fsen_2-Fsen_2*(exp(-3*(tk-360)/4)); 0];
         end
 
-        if tk > 550 && tk < 650
-            Yfail(:, k) = Y(:, k) + [-Fsen_1+Fsen_1*(exp(-(tk-550)/4)); 0; 0];
+        if tk > 520 && tk < 620
+            Yfail(:, k) = Y(:, k) + [-Fsen_1+Fsen_1*(exp(-3*(tk-520)/4)); 0; 0];
         end
         
         %% Setpoint
         Xsp(1, k) = Theta_1s_mid;
         Xsp(2, k) = Theta_2s_mid;
 
-        if tk < 160
+        if tk < 150
             Xsp(1, k) = Theta_1s_min;
         elseif tk >= 160 && tk < 190
-            Xsp(1, k) = Theta_1s_min+((Theta_1s_mid-Theta_1s_min)*(tk-160)/30);
-        elseif tk >= 190 && tk < 330
+            Xsp(1, k) = Theta_1s_min+((Theta_1s_mid-Theta_1s_min)*(tk-150)/30);
+        elseif tk >= 190 && tk < 310
             Xsp(1, k) = Theta_1s_mid;
-         elseif tk >= 330 && tk < 360
-            Xsp(1, k) = Theta_1s_mid+((Theta_1s_max-Theta_1s_mid)*(tk-330)/30);
-        elseif tk >= 360 && tk < 500
+         elseif tk >= 310 && tk < 350
+            Xsp(1, k) = Theta_1s_mid+((Theta_1s_max-Theta_1s_mid)*(tk-310)/40);
+        elseif tk >= 350 && tk < 470
             Xsp(1, k) = Theta_1s_max;
-        elseif tk >= 500 && tk < 530
-            Xsp(1, k) = Theta_1s_max-((Theta_1s_max-Theta_1s_mid)*(tk-500)/30);
+        elseif tk >= 470 && tk < 510
+            Xsp(1, k) = Theta_1s_max-((Theta_1s_max-Theta_1s_mid)*(tk-470)/40);
         end        
         
         %% membership
@@ -281,7 +281,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         X_UIOO1(:, k) = Z1(:, k) - E1*Yest1(:, k);
 
         % Residue 1
-        res1(:, k) = Yfail(:, k) - C*X_UIOO1(:, k);
+        res1(:, k) = Yfail(:, k) - X_UIOO1(:, k);
         
         % Error norm 1
         Error1(k) = sqrt(res1(1, k)^2);
@@ -307,7 +307,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         X_UIOO2(:, k) = Z2(:, k) - E2*Yest2(:, k);
         
         % Residue 2
-        res2(:, k) = Yfail(:, k) - C*X_UIOO2(:, k);
+        res2(:, k) = Yfail(:, k) - X_UIOO2(:, k);
 
         % Error norm 2
         Error2(k) = sqrt(res2(2, k)^2);
@@ -344,7 +344,8 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
             delay_2 = 0;
             Fact2(k) = 0;
         end
-
+                  
+        
         %% Sensor fault estimation
         % Sensor fault 1
         if FO1 && ~FO2 && FQ1 && FQ2
