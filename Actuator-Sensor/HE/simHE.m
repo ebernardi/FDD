@@ -142,7 +142,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
         
         if tk > 220 && tk < 320
-            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-210)/10))];
+            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-220)/10))];
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
@@ -155,11 +155,11 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Yfail(:, k) = Y(:, k);
 
         if tk >400 && tk < 500
-            Yfail(:, k) = Y(:, k) + [0; Fsen_2-Fsen_2*(exp(-(tk-380)/4)); 0];
+            Yfail(:, k) = Y(:, k) + [0; Fsen_2-Fsen_2*(exp(-(tk-400)/5)); 0];
         end
 
         if tk > 580 && tk < 680
-            Yfail(:, k) = Y(:, k) + [-Fsen_1+Fsen_1*(exp(-(tk-580)/5)); 0; 0];
+            Yfail(:, k) = Y(:, k) + [-Fsen_1+Fsen_1*(exp(-(tk-580)/6)); 0; 0];
         end
         
         %% Setpoint

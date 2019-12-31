@@ -1,3 +1,10 @@
+clc; clear; close all;
+
+load runHE
+
+% % When generates flat figures
+% set(0, 'DefaultFigureRenderer', 'painters');
+
 %% Set Plots
 % Colors
 vecrojo = [0.7; 0; 0]; vecverde = [0; 0.8; 0]; vecazul = [0; 0; 0.6]; negro = [.1; .1; .1]; gris = [.5; .7; .5];
@@ -10,37 +17,37 @@ dark_blue = [0 0 139]/255; gold = [255 215 0]/255; chocolate = [210 105 30]/255;
 %% States
 fig = figure('Name', 'States');
 subplot(311)
-plot(t, Xsp(1, :), 'r:', 'LineWidth', 1.5);
+plot(t, Xsp(1, :), 'r-.', 'LineWidth', 1.5);
 hold on
-plot(t, Y(1, :), 'b--', 'LineWidth', 1.5);
-plot(t, Yfail(1, :), 'g-.', 'LineWidth', 1.5); hold off
+plot(t, Y(1, :), 'b:', 'LineWidth', 1.5);
+plot(t, Yfail(1, :), 'g--', 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\theta_1 [K]'); grid on
 axis([0 inf 494.5 500.5])
 leg = legend('SetPoint', 'System', 'Measured');
 set(leg, 'Position', [0.139 0.795 0.16 0.119]);
 leg.ItemTokenSize = [20, 18];
 subplot(312)
-plot(t, Xsp(2, :), 'r:', 'LineWidth', 1.5);
+plot(t, Xsp(2, :), 'r-.', 'LineWidth', 1.5);
 hold on
-plot(t, Y(2, :), 'b--', 'LineWidth', 1.5);
-plot(t, Yfail(2, :), 'g-.', 'LineWidth', 1.5); hold off
+plot(t, Y(2, :), 'b:', 'LineWidth', 1.5);
+plot(t, Yfail(2, :), 'g--', 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\theta_2 [K]'); grid on
 axis([0 inf 690 700])
 subplot(313)
-plot(t, Y(3, :), 'b--', 'LineWidth', 1.5);
+plot(t, Y(3, :), 'b:', 'LineWidth', 1.5);
 hold on
-plot(t, Yfail(3, :), 'g-.', 'LineWidth', 1.5); hold off
+plot(t, Yfail(3, :), 'g--', 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\theta_p [K]'); grid on
 axis([0 inf 555 565])
 
 % Create textarrow
-annotation(fig, 'textarrow',[0.705 0.742], [0.8 0.826], ...
+annotation(fig, 'textarrow',[0.712 0.749], [0.8 0.826], ...
     'String', {'Sensor fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
-annotation(fig, 'textarrow', [0.498 0.551], [0.507 0.547], ...
-    'String', {'Sensor fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+annotation(fig, 'textarrow', [0.498 0.556], [0.488 0.511], ...
+    'String', {'Difference due to', 'sensor fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
-print -dsvg FDD_HE_state.svg
+print -dsvg figs/FDD_HE_state.svg
 
 %% Manipulated variables
 figure('Name', 'Manipulated variables')
