@@ -2,8 +2,8 @@ clc; clear; close all;
 
 load runHE
 
-% % When generates flat figures
-% set(0, 'DefaultFigureRenderer', 'painters');
+% When generates flat figures
+set(0, 'DefaultFigureRenderer', 'painters');
 
 %% Set Plots
 % Colors
@@ -147,19 +147,39 @@ annotation(fig, 'textarrow', [0.543 0.556], [0.303 0.336], ...
 print -dsvg figs/FDD_HE_RUIOestimation.svg
 
 %% Sensor fault estimation
-figure('Name', 'Sensor fault estimation');
+fig = figure('Name', 'Sensor fault estimation');
 subplot(211)
-stairs(t, Fsen1, 'b', 'LineWidth', 1.5)
+stairs(t, Fsen1, 'Color', bordo, 'LineWidth', 1.5)
 hold on
-stairs(t, Yfail(1, :) - Y(1, :), 'm--', 'LineWidth', 1.5); hold off
+stairs(t, Yfail(1, :) - Y(1, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\Theta_1 [K]'); grid on
 axis([0 inf -3 0.5])
+leg = legend('Estimation', 'Fault', 'Location', 'SouthWest');
+leg.ItemTokenSize = [20, 15];
 subplot(212)
-stairs(t, Fsen2, 'b', 'LineWidth', 1.5)
+stairs(t, Fsen2, 'Color', bordo, 'LineWidth', 1.5)
 hold on
-stairs(t, Yfail(2, :) - Y(2, :), 'm--', 'LineWidth', 1.5); hold off
+stairs(t, Yfail(2, :) - Y(2, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\Theta_2 [K]'); grid on
 axis([0 inf -0.5 4])
+
+% Create axes
+ax = axes('Parent', fig, 'Position', [0.421 0.654 0.229 0.2], 'FontSize', 8);
+hold(ax, 'on');
+plot(t, Fsen1, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
+plot(t, Yfail(1, :) - Y(1, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
+xlim(ax, [578 590]); ylim(ax, [-2 0]);
+box(ax, 'on'); grid(ax, 'on');
+
+% Create axes
+ax = axes('Parent', fig, 'Position', [0.248 0.233 0.203 0.165], 'FontSize', 8);
+hold(ax, 'on');
+plot(t, Fsen2, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
+plot(t, Yfail(2, :) - Y(2, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
+xlim(ax, [400 510]); ylim(ax, [3.3 3.7]);
+box(ax, 'on'); grid(ax, 'on');
+
+print -dsvg figs/FDD_HE_UIOOestimation.svg
 
 %% Membership
 fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1], 'Name', 'Membership');

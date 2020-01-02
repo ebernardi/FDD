@@ -60,10 +60,10 @@ mag_4 = 1e-1;     % Value O2
 threshold = zeros(4, Nsim);
 
 for k = 1:Nsim
-    threshold(1, k) = mag_1 + 400*exp(-(k-1)/Tau);  % Q1
-    threshold(2, k) = mag_2 + 600*exp(-(k-1)/Tau);  % Q2
-    threshold(3, k) = mag_3 + 600*exp(-(k-1)/Tau);  % O1
-    threshold(4, k) = mag_4 + 100*exp(-(k-1)/Tau);  % O2
+    threshold(1, k) = mag_1 + 1000*exp(-(k-1)/Tau);  % Q1
+    threshold(2, k) = mag_2 + 900*exp(-(k-1)/Tau);  % Q2
+    threshold(3, k) = mag_3 + 100*exp(-(k-1)/Tau);  % O1
+    threshold(4, k) = mag_4 + 1000*exp(-(k-1)/Tau);  % O2
 end
 
 %% Parámetros del PID
