@@ -43,6 +43,9 @@ Fsen_1 = 2.5; Fsen_2 = 3.5;	% Sensor fault magnitude [0.5% 0.5%]
 % 
 % % Unknown input output observer
 % run HE_DLPV_UIOO;
+% 
+% % Save observers' data
+% save polyObs.mat
 
 %% Noise
 sig = 3e-3*([1 1 1])';    % Ouput noise sigma

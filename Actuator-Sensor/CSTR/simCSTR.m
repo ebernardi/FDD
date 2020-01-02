@@ -2,13 +2,76 @@
 clc; clear; close all;
 yalmip('clear');
 
+%% Load polytope and observer matrices
+load polyObs
+
 %% Simulation parameters
-Time = 400;                            % Simulation end time
+Time = 720.1;                         % Simulation end time
 Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time
-Fact_1 = [0; -5]; Fact_2 = [5; 0];              % Actuator fault magnitude
-Fsen_1 = 1; Fsen_2 = 4;	% Sensor fault magnitude
+Fact_1 = 5; Fact_2 = 5;          % Actuator fault magnitude
+Fsen_1 = 1; Fsen_2 = 4;        % Sensor fault magnitude
+
+% %% Polytope model
+% V_min = 90;		% Volumen mínimo (m^3)
+% V_mid = 98;	% Volumen medio (m^3)
+% V_max = 110;	% Volumen máximo (m^3)
+% % CA_min = 0.06;	% Concentración mínima (mol/l)
+% % CA_mid = 0.087;	% Concentración media (mol/l)
+% % CA_max = 0.12;	% Concentración máxima (mol/l)
+% Tr_min = 440;	% Temperatura mínima (°K)
+% Tr_mid = 445;	% Temperatura media (°K)
+% Tr_max = 450;  % Temperatura máxima (°K)
+% 
+% run CSTR_polytope;
+% M = 9;
+% 
+% % Observer start point
+% Vr = V_mid;				% [l] Volumen del reactor
+% Tr = Tr_min;             % [K] Temperatura de salida
+% % Ca = CA_min;            % [mol/l] Concentración de salida
+% run CSTR_linear;
+% x0_obs = [Vr; Ca; Tr];
+% 
+% % System start point
+% Vr = V_mid;				% [l] Volumen del reactor
+% Tr = Tr_min;             % [K] Temperatura de salida
+% % Ca = CA_min;            % [mol/l] Concentración de salida
+% run CSTR_linear;
+% x0 = [Vr; Ca; Tr];
+% 
+% % Reduced-order unknown input observer
+% run RUIO;
+% N = 2;
+% 
+% % Unknown input output observer
+% run CSTR_DLPV_UIOO;
+% 
+% % Save observers' data
+% save polyObs.mat
+
+%% Noise
+sig = 3e-3*([1 1 1])';    % Ouput noise sigma
+
+rng default;                        % Random seed start
+v = sig*randn(1, Nsim);    % Measurement noise v~N(0, sig)
+
+%% Error detection threshold
+Tau = 10;    % period
+mag_1 = 4e-2;     % Value Q1
+mag_2 = 5e-2;     % Value Q2
+mag_3 = 4e-3;     % Value O1 %3e-4
+mag_4 = 1e-1;     % Value O2
+
+threshold = zeros(4, Nsim);
+
+for k = 1:Nsim
+    threshold(1, k) = mag_1 + 1000*exp(-(k-1)/Tau);  % Q1
+    threshold(2, k) = mag_2 + 900*exp(-(k-1)/Tau);  % Q2
+    threshold(3, k) = mag_3 + 100*exp(-(k-1)/Tau);  % O1
+    threshold(4, k) = mag_4 + 1000*exp(-(k-1)/Tau);  % O2
+end
 
 %% Parámetros del PID
 ek = [0; 0]; ek_1 = [0; 0];
@@ -20,34 +83,6 @@ Ki = [-1.5; -1.5];
 % Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
 options = odeset ('RelTol', 1e-12, 'AbsTol', 1e-12, ...
 	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
-
-%% Polytope model
-V_min = 90;		% Volumen mínimo (m^3)
-V_mid = 98;	% Volumen medio (m^3)
-V_max = 110;	% Volumen máximo (m^3)
-% CA_min = 0.06;	% Concentración mínima (mol/l)
-% CA_mid = 0.087;	% Concentración media (mol/l)
-% CA_max = 0.12;	% Concentración máxima (mol/l)
-Tr_min = 440;	% Temperatura mínima (°K)
-Tr_mid = 445;	% Temperatura media (°K)
-Tr_max = 450;  % Temperatura máxima (°K)
-
-run CSTR_polytope;
-M = 9;
-
-% Start point
-Vr = V_mid;				% [l] Volumen del reactor
-Tr = Tr_min;             % [K] Temperatura de salida
-% Ca = CA_min;            % [mol/l] Concentración de salida
-run CSTR_linear;
-x0 = [Vr; Ca; Tr];
-
-%% Reduced-order unknown input observer
-run RUIO;
-nobs = 2;
-
-%% Unknown input output observer
-run CSTR_DLPV_UIOO;
 
 %% Simulation Setup
 U = zeros(nu, Nsim);                   % Control Input
@@ -62,14 +97,14 @@ Xsp = zeros(nx, Nsim);                 % Set-point
 delay_1 = 0; delay_2 = 0;
 
 % RUIO 1
-Phi_1 = zeros(nobs, Nsim+1);     % Observer states
+Phi_1 = zeros(N, Nsim+1);           % Observer states
 X_UIO1 = zeros(nx, Nsim);           % Estimated states
 Error_1 = zeros(1, Nsim);             % Error
 Fact1 = zeros(1, Nsim);                % Estimated control Input
 FQ1 = zeros(1, Nsim);                  % Fault detect Q1
 
 % RUIO 2
-Phi_2 = zeros(nobs, Nsim+1);     % Observer states
+Phi_2 = zeros(N, Nsim+1);          % Observer states
 X_UIO2 = zeros(nx, Nsim);           % Estimated states
 Error_2 = zeros(1, Nsim);             % Error
 Fact2 = zeros(1, Nsim);                % Estimated control Input
@@ -77,7 +112,7 @@ FQ2 = zeros(1, Nsim);                  % Fault detect Q2
 
 % UIOO 1
 Z1 = zeros(nx, Nsim+1);              % Observer states
-J1 = zeros(2, Nsim);                      % Monitorated outputs
+J1 = zeros(p, Nsim);                      % Monitorated outputs
 X_UIOO1 = zeros(nx, Nsim);         % Estimated states
 res1 = zeros(nx, Nsim);                % Residue
 Error1 = zeros(1, Nsim);               % Error
@@ -86,7 +121,7 @@ FO1 = zeros(1, Nsim);                  % Fault detect S1
 
 % UIOO 2
 Z2 = zeros(nx, Nsim+1);              % Observer states
-J2 = zeros(2, Nsim);                      % Monitorated outputs
+J2 = zeros(p, Nsim);                      % Monitorated outputs
 X_UIOO2 = zeros(nx, Nsim);         % Estimated states
 res2 = zeros(nx, Nsim);                % Residue
 Error2 = zeros(1, Nsim);               % Error
@@ -95,12 +130,12 @@ FO2 = zeros(1, Nsim);                  % Fault detect S2
 
 % Initial states and inputs
 X(:, 1) = x0;
-Phi_1(:, 1) = x0(1:nobs);
-Phi_2(:, 1) = x0(1:nobs);
-Z1(:, 1) = x0;
-Z2(:, 1) = x0;
 Xsp(:, 1) = x0;
 U(:, 1) = U_lin;
+X_UIO1(:, 1) = x0_obs;
+X_UIO2(:, 1) = x0_obs;
+X_UIOO1(:, 1) = x0_obs;
+X_UIOO2(:, 1) = x0_obs;
 
 %% Simulation
 for FTC = 0 % 0 - FTC is off; 1 - FTC is on
@@ -113,13 +148,13 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Ufails(:, k) = [0; 0];
 
         if tk > 30 && tk < 60
-            Ufail(:, k) = U(:, k) + Fact_2;
-            Ufails(:, k) = Fact_2;
+            Ufails(:, k) = [Fact_1-Fact_1*(exp(-(tk-30)/10)); 0];
+            Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
         if tk > 170 && tk < 200
-            Ufail(:, k) = U(:, k) + Fact_1;
-            Ufails(:, k) = Fact_1;
+            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-170)/10))];
+            Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
         %% Process simulation with ODE
@@ -362,104 +397,6 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
     end
 end
 
-%% Set Plots
-% Colors
-vecrojo = [0.7; 0; 0]; vecverde = [0; 0.8; 0]; vecazul = [0; 0; 0.6]; negro = [.1; .1; .1]; gris = [.5; .7; .5];
-azul = [0 0.4470 0.7410]; naranja = [0.8500 0.3250 0.0980]; amarillo = [0.9290 0.6940 0.1250];
-violeta = [0.4940 0.1840 0.5560]; verde = [0.4660 0.6740 0.1880]; celeste = [0.3010 0.7450 0.9330];
-bordo = [0.6350 0.0780 0.1840]; 
-orange_red = [255 69 0]/255; forest_green = [34 139 34]/255; royal_blue = [65 105 225]/255; 
-dark_blue = [0 0 139]/255; gold = [255 215 0]/255; chocolate = [210 105 30]/255;
+save runCSTR
 
-%% States
-figure('Name', 'States')
-subplot(311)
-plot(t, Xsp(1, :), 'r:', 'LineWidth', 1.5);
-hold on
-plot(t, Y(1, :), 'b', 'LineWidth', 1.5);
-plot(t, Yfail(1, :), 'g--', 'LineWidth', 1.5);
-xlabel('Time [min]'); ylabel('V [l]'); grid on; hold off
-axis([0 inf 90 110])
-subplot(312)
-plot(t, Y(2, :), 'b', 'LineWidth', 1.5);
-hold on
-plot(t, Yfail(2, :), 'g--', 'LineWidth', 1.5);
-xlabel('Time [min]'); ylabel('C_A [mol/l]'); grid on; hold off
-axis([0 inf 0.05 0.15])
-subplot(313)
-plot(t, Xsp(3, :), 'r:', 'LineWidth', 1.5);   
-hold on
-plot(t, Y(3, :), 'b', 'LineWidth', 1.5);
-plot(t, Yfail(3, :), 'g--', 'LineWidth', 1.5);
-xlabel('Time [min]'); ylabel('T [K]'); grid on; hold off
-axis([0 inf 430 460])
-
-%% RUIO error
-figure('Name', 'RUIO error')
-subplot(211)
-stairs(t, Error_1, 'b', 'LineWidth', 1.5)
-xlabel('Time [min]'); ylabel('|e_x|'); grid on
-axis([0 inf 0 1.5])
-subplot(212)
-stairs(t, Error_2, 'b', 'LineWidth', 1.5)
-xlabel('Time [min]'); ylabel('|e_x|'); grid on
-axis([0 inf 0 0.3])
-
-%% UIOO error
-figure('Name', 'UIOO error')
-subplot(211)
-stairs(t, Error1, 'b', 'LineWidth', 1.5)
-xlabel('Time [min]'); ylabel('|e_x|_1'); grid on
-axis([0 inf 0 4e-4])
-subplot(212)
-stairs(t, Error2, 'b', 'LineWidth', 1.5)
-xlabel('Time [min]'); ylabel('|e_x|_2'); grid on
-axis([0 inf 0 2e-2])
-
-%% Actuator fault estimation
-figure('Name', 'Actuator fault estimation')
-subplot(211)
-stairs(t, Fact1, 'b', 'LineWidth', 1.5)
-hold on
-stairs(t, Ufails(1, :), 'm--', 'LineWidth', 1.5)
-xlabel('Time [min]'); ylabel('Q_1 [l/min]'); grid on
-axis([0 inf -0.5 5.5])
-subplot(212)
-stairs(t, Fact2, 'b', 'LineWidth', 1.5)
-hold on
-stairs(t, Ufails(2, :), 'm--', 'LineWidth', 1.5)
-xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
-axis([0 inf -5.5 0.1])
-
-%% Sensor fault estimation
-figure('Name', 'Sensor fault estimation');
-subplot(211)
-stairs(t, Fsen1, 'b', 'LineWidth', 1.5)
-hold on
-stairs(t, Yfail(1, :) - Y(1, :), 'm--', 'LineWidth', 1.5)
-xlabel('Time [min]'); ylabel('\Theta_1 [K]'); grid on
-axis([0 inf -1.25 0.25])
-subplot(212)
-stairs(t, Fsen2, 'b', 'LineWidth', 1.5)
-hold on
-stairs(t, Yfail(3, :) - Y(3, :), 'm--', 'LineWidth', 1.5)
-xlabel('Time [min]'); ylabel('\Theta_2 [K]'); grid on
-axis([0 inf -4.5 0.5])
-
-%% Membership
-fig = figure('DefaultAxesFontSize', 9, 'Color', [1 1 1], 'Name', 'Membership');
-plot(t, mu_out(1, :), 'Color', naranja, 'linewidth', 1.5); hold on; grid on;
-plot(t, mu_out(2, :), 'Color', azul, 'linewidth', 1.5);
-plot(t, mu_out(3, :), 'k', 'linewidth', 1.5);
-plot(t, mu_out(4, :), 'r', 'linewidth', 1.5);
-plot(t, mu_out(5, :), 'Color', forest_green, 'linewidth', 1.5);
-plot(t, mu_out(6, :), 'Color', bordo, 'linewidth', 1.5);
-plot(t, mu_out(7, :), 'm', 'linewidth', 1.5);
-plot(t, mu_out(8, :), 'Color', violeta, 'linewidth', 1.5);
-plot(t, mu_out(9, :), 'Color', amarillo, 'linewidth', 1.5); hold off;
-axis([0 inf 0 1]);
-xlabel('Tiempo [min]'); ylabel('\mu_i'); yticks([0 0.2 0.4 0.6 0.8 1]); yticklabels({'0', '0,2', '0,4', '0,6', '0,8', '1'});
-pbaspect([2 1 1]);
-leg = legend('\mu_1', '\mu_2', '\mu_3', '\mu_4', '\mu_5', '\mu_6', '\mu_7', '\mu_8', '\mu_9', 'Location', 'East');
-set(leg, 'Position', [0.697 0.325 0.077 0.383], 'FontSize', 8);
-leg.ItemTokenSize = [20, 18];
+run enPlotCSTR

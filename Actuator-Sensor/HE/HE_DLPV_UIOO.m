@@ -44,7 +44,7 @@ W7 = sdpvar(n, p);
 W8 = sdpvar(n, p);
 W9 = sdpvar(n, p);
 
-alpha = 0.5;
+% alpha = 0.5;
 alpha = 0.1;
 
 % LMI 1
