@@ -39,7 +39,10 @@ F1_9 = B9d(:, 1);
 % F1_8 = B8d;
 % F1_9 = B9d;
 
-J_1 = C([1 2], :);
+H_1 = zeros(size(C));
+H_1(3, :) = C(3, :);
+T2_1 = null(H_1, 'r')';
+J_1 = T2_1*C;
 
 % Dimension of system matrices
 n = size(A1d, 1);    % n = 3
@@ -239,7 +242,10 @@ F2_7 = B7d;
 F2_8 = B8d;
 F2_9 = B9d;
 
-J_2 = C([2 3], :);
+H_2 = zeros(size(C));
+H_2(1, :) = C(1, :);
+T2_2 = null(H_2, 'r')';
+J_2 = T2_2*C;
 
 % Dimension of system matrices
 n = size(A1d, 1);    % n = 3

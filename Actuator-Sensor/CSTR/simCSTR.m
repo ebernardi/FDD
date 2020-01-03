@@ -52,17 +52,17 @@ Fsen_1 = 1; Fsen_2 = 4;        % Sensor fault magnitude
 % save polyObs.mat
 
 %% Noise
-sig = 3e-3*([1 1 1])';    % Ouput noise sigma
+sig = 3e-4*([1 1e-5 1])';    % Ouput noise sigma
 
 rng default;                        % Random seed start
 v = sig*randn(1, Nsim);    % Measurement noise v~N(0, sig)
 
 %% Error detection threshold
 Tau = 10;    % period
-mag_1 = 4e-2;     % Value Q1
-mag_2 = 5e-2;     % Value Q2
-mag_3 = 4e-3;     % Value O1 %3e-4
-mag_4 = 1e-1;     % Value O2
+mag_1 = 1e-1;     % Value Q1
+mag_2 = 6e-4;     % Value Q2
+mag_3 = 2e-5;     % Value O1 %3e-4
+mag_4 = 4e-4;     % Value O2
 
 threshold = zeros(4, Nsim);
 
@@ -112,7 +112,7 @@ FQ2 = zeros(1, Nsim);                  % Fault detect Q2
 
 % UIOO 1
 Z1 = zeros(nx, Nsim+1);              % Observer states
-J1 = zeros(p, Nsim);                      % Monitorated outputs
+Yest1 = zeros(p, Nsim);                % Monitorated outputs
 X_UIOO1 = zeros(nx, Nsim);         % Estimated states
 res1 = zeros(nx, Nsim);                % Residue
 Error1 = zeros(1, Nsim);               % Error
@@ -121,7 +121,7 @@ FO1 = zeros(1, Nsim);                  % Fault detect S1
 
 % UIOO 2
 Z2 = zeros(nx, Nsim+1);              % Observer states
-J2 = zeros(p, Nsim);                      % Monitorated outputs
+Yest2 = zeros(p, Nsim);                % Monitorated outputs
 X_UIOO2 = zeros(nx, Nsim);         % Estimated states
 res2 = zeros(nx, Nsim);                % Residue
 Error2 = zeros(1, Nsim);               % Error
@@ -147,47 +147,61 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Ufail(:, k) = U(:, k);      
         Ufails(:, k) = [0; 0];
 
-        if tk > 30 && tk < 60
+        if tk > 30 && tk < 130
             Ufails(:, k) = [Fact_1-Fact_1*(exp(-(tk-30)/10)); 0];
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
-        if tk > 170 && tk < 200
-            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-170)/10))];
+        if tk > 220 && tk < 320
+            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-220)/10))];
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
         %% Process simulation with ODE
         [tsim, x] = ode45(@(x, u) CSTR(X(:, k), Ufail(:, k)) , [0 Ts], X(:, k), options);
         X(:, k+1) = x(end, :)';
-        Y(:, k) = C*X(:, k);
+        Y(:, k) = C*X(:, k)+v(:, k);
         
         %% Sensor fault income
         Yfail(:, k) = Y(:, k);
 
-        if tk >280 && tk < 330
-            Yfail(:, k) = Y(:, k) +[0; 0; -Fsen_2 + Fsen_2*(exp(-(tk-280)/5))];
+        if tk >400 && tk < 450
+            Yfail(:, k) = Y(:, k) +[0; 0; -Fsen_2 + Fsen_2*(exp(-(tk-400)/5))];
         end
         
-        if tk >= 330 && tk < 340
-            Yfail(:, k) = Y(:, k) + [0; 0; - Fsen_2*(exp(-(tk-330)/3))];
+        if tk >= 450 && tk < 500
+            Yfail(:, k) = Y(:, k) + [0; 0; - Fsen_2*(exp(-(tk-450)/3))];
         end
-        
-%         if tk > 340 && tk < 390
-%             Yfail(:, k) = Y(:, k) + [4*sin((tk-340)/4); 0; 0];
-%         end
 
-        if tk > 340 && tk < 390
-            Yfail(:, k) = Y(:, k) + [-Fsen_1 + Fsen_1*(exp(-3*(tk-340)/4)); 0; 0];
+        if tk > 580 && tk < 650
+            Yfail(:, k) = Y(:, k) + [-Fsen_1 + Fsen_1*(exp(-3*(tk-580)/4)); 0; 0];
         end
         
-        if tk >= 390 && tk < 400
-            Yfail(:, k) = Y(:, k) + [- Fsen_1*(exp(-2*(tk-390))); 0; 0];
+        if tk >= 650 && tk < 680
+            Yfail(:, k) = Y(:, k) + [- Fsen_1*(exp(-2*(tk-650))); 0; 0];
+        end
+        
+        %% Setpoint
+        Xsp(1, k) = V_mid;
+        Xsp(3, k) = Tr_mid;
+    
+        if tk < 160
+            Xsp(3, k) = Tr_min;
+        elseif tk >= 160 && tk < 200
+            Xsp(3, k) = Tr_min+((Tr_mid-Tr_min)*(tk-160)/40);
+        elseif tk >= 200 && tk < 340
+           Xsp(3, k) = Tr_mid;   
+        elseif tk >= 340 && tk < 380
+            Xsp(3, k) = Tr_mid+((Tr_max-Tr_mid)*(tk-340)/40);
+        elseif tk >= 380 && tk < 520
+            Xsp(3, k) = Tr_max-((Tr_max-Tr_mid)*(tk-380)/140);
+        elseif tk >= 520 && tk < 560
+           Xsp(1, k) = V_mid;   
         end
         
         %% Membership
         mu_out(:, k) = membership(Yfail(:, k), V_min, V_mid, V_max, Tr_min, Tr_mid, Tr_max);
-        mu_in(:, k) = membership(Y(:, k), V_min, V_mid, V_max, Tr_min, Tr_mid, Tr_max);
+        mu_in(:, k) = membership(Yfail(:, k), V_min, V_mid, V_max, Tr_min, Tr_mid, Tr_max);
       
         %% LPV-RUIO 1
         Phi_1(:, k+1) = mu_out(1, k)*(H1_K1*Phi_1(:, k) + H1_L1_ast*Yfail(:, k) + H1_B1_bar_1*U(:, k) + H1_delta1_bar_1) ...
@@ -224,7 +238,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu_out(8, k)*(H1_U8_1*(X(:, k+1) - H1_C8_tilde_1*Phi_1(:, k+1)) + H1_A8_bar_22*H1_U8_1*(H1_C8_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A8_bar_21*Phi_1(:, k) - H1_B8_bar_2*U(:, k) -  H1_delta8_bar_2) ...
                       + mu_out(9, k)*(H1_U9_1*(X(:, k+1) - H1_C9_tilde_1*Phi_1(:, k+1)) + H1_A9_bar_22*H1_U9_1*(H1_C9_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A9_bar_21*Phi_1(:, k) - H1_B9_bar_2*U(:, k) -  H1_delta9_bar_2);
 
-        if Error_1(k) > 1e-1
+        if Error_1(k) > threshold(1, k)
             FQ1(k) = true;
         else
             FQ1(k) = false;
@@ -265,59 +279,59 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu_out(8, k)*(H2_U8_1*(X(:, k+1) - H2_C8_tilde_1*Phi_2(:, k+1)) + H2_A8_bar_22*H2_U8_1*(H2_C8_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A8_bar_21*Phi_2(:, k) - H2_B8_bar_2*U(:, k) -  H2_delta8_bar_2) ...
                       + mu_out(9, k)*(H2_U9_1*(X(:, k+1) - H2_C9_tilde_1*Phi_2(:, k+1)) + H2_A9_bar_22*H2_U9_1*(H2_C9_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A9_bar_21*Phi_2(:, k) - H2_B9_bar_2*U(:, k) -  H2_delta9_bar_2);
 
-        if Error_2(k) > 6e-4
+        if Error_2(k) > threshold(2, k)
             FQ2(k) = true;
         else
             FQ2(k) = false;
         end
         
         %% DLPV-UIOO 1
-        J1(:, k) = Yfail([1 2], k);
-        Z1(:, k+1) = mu_in(1, k)*(N1_1*Z1(:, k) + L1_1*J1(:, k) + G1_1*U(:, k) + Tg1_1) ...
-                         + mu_in(2, k)*(N1_2*Z1(:, k) + L1_2*J1(:, k) + G1_2*U(:, k) + Tg1_2) ...
-                         + mu_in(3, k)*(N1_3*Z1(:, k) + L1_3*J1(:, k) + G1_3*U(:, k) + Tg1_3) ...
-                         + mu_in(4, k)*(N1_4*Z1(:, k) + L1_4*J1(:, k) + G1_4*U(:, k) + Tg1_4) ...
-                         + mu_in(5, k)*(N1_5*Z1(:, k) + L1_5*J1(:, k) + G1_5*U(:, k) + Tg1_5) ...
-                         + mu_in(6, k)*(N1_6*Z1(:, k) + L1_6*J1(:, k) + G1_6*U(:, k) + Tg1_6) ...
-                         + mu_in(7, k)*(N1_7*Z1(:, k) + L1_7*J1(:, k) + G1_7*U(:, k) + Tg1_7) ...
-                         + mu_in(8, k)*(N1_8*Z1(:, k) + L1_8*J1(:, k) + G1_8*U(:, k) + Tg1_8) ...
-                         + mu_in(9, k)*(N1_9*Z1(:, k) + L1_9*J1(:, k) + G1_9*U(:, k) + Tg1_9);
+        Yest1(:, k) = Yfail([1 2], k);
+        Z1(:, k+1) = mu_in(1, k)*(N1_1*Z1(:, k) + L1_1*Yest1(:, k) + G1_1*U(:, k) + Tg1_1) ...
+                         + mu_in(2, k)*(N1_2*Z1(:, k) + L1_2*Yest1(:, k) + G1_2*U(:, k) + Tg1_2) ...
+                         + mu_in(3, k)*(N1_3*Z1(:, k) + L1_3*Yest1(:, k) + G1_3*U(:, k) + Tg1_3) ...
+                         + mu_in(4, k)*(N1_4*Z1(:, k) + L1_4*Yest1(:, k) + G1_4*U(:, k) + Tg1_4) ...
+                         + mu_in(5, k)*(N1_5*Z1(:, k) + L1_5*Yest1(:, k) + G1_5*U(:, k) + Tg1_5) ...
+                         + mu_in(6, k)*(N1_6*Z1(:, k) + L1_6*Yest1(:, k) + G1_6*U(:, k) + Tg1_6) ...
+                         + mu_in(7, k)*(N1_7*Z1(:, k) + L1_7*Yest1(:, k) + G1_7*U(:, k) + Tg1_7) ...
+                         + mu_in(8, k)*(N1_8*Z1(:, k) + L1_8*Yest1(:, k) + G1_8*U(:, k) + Tg1_8) ...
+                         + mu_in(9, k)*(N1_9*Z1(:, k) + L1_9*Yest1(:, k) + G1_9*U(:, k) + Tg1_9);
 
-        X_UIOO1(:, k) = Z1(:, k) - E1*J1(:, k);
+        X_UIOO1(:, k) = Z1(:, k) - E1*Yest1(:, k);
 
         % Residue 1
-        res1(:, k) = Yfail(:, k) - X_UIOO1(:, k);
+        res1(:, k) = Yfail(:, k) - C*X_UIOO1(:, k);
         
         % Error norm 1
         Error1(k) = sqrt(res1(2, k)^2);
         
-        if Error1(k) > 2e-5
+        if Error1(k) > threshold(3, k)
             FO1(k) = true;
         else
             FO1(k) = false;
         end
             
         %% DLPV-UIOO 2
-        J2(:, k) = Yfail([2 3], k);
-        Z2(:, k+1) = mu_in(1, k)*(N2_1*Z2(:, k) + L2_1*J2(:, k) + G2_1*U(:, k) + Tg2_1) ...
-                         + mu_in(2, k)*(N2_2*Z2(:, k) + L2_2*J2(:, k) + G2_2*U(:, k) + Tg2_2) ...
-                         + mu_in(3, k)*(N2_3*Z2(:, k) + L2_3*J2(:, k) + G2_3*U(:, k) + Tg2_3) ...
-                         + mu_in(4, k)*(N2_4*Z2(:, k) + L2_4*J2(:, k) + G2_4*U(:, k) + Tg2_4) ...
-                         + mu_in(5, k)*(N2_5*Z2(:, k) + L2_5*J2(:, k) + G2_5*U(:, k) + Tg2_5) ...
-                         + mu_in(6, k)*(N2_6*Z2(:, k) + L2_6*J2(:, k) + G2_6*U(:, k) + Tg2_6) ...
-                         + mu_in(7, k)*(N2_7*Z2(:, k) + L2_7*J2(:, k) + G2_7*U(:, k) + Tg2_7) ...
-                         + mu_in(8, k)*(N2_8*Z2(:, k) + L2_8*J2(:, k) + G2_8*U(:, k) + Tg2_8) ...
-                         + mu_in(9, k)*(N2_9*Z2(:, k) + L2_9*J2(:, k) + G2_9*U(:, k) + Tg2_9);
+        Yest2(:, k) = Yfail([2 3], k);
+        Z2(:, k+1) = mu_in(1, k)*(N2_1*Z2(:, k) + L2_1*Yest2(:, k) + G2_1*U(:, k) + Tg2_1) ...
+                         + mu_in(2, k)*(N2_2*Z2(:, k) + L2_2*Yest2(:, k) + G2_2*U(:, k) + Tg2_2) ...
+                         + mu_in(3, k)*(N2_3*Z2(:, k) + L2_3*Yest2(:, k) + G2_3*U(:, k) + Tg2_3) ...
+                         + mu_in(4, k)*(N2_4*Z2(:, k) + L2_4*Yest2(:, k) + G2_4*U(:, k) + Tg2_4) ...
+                         + mu_in(5, k)*(N2_5*Z2(:, k) + L2_5*Yest2(:, k) + G2_5*U(:, k) + Tg2_5) ...
+                         + mu_in(6, k)*(N2_6*Z2(:, k) + L2_6*Yest2(:, k) + G2_6*U(:, k) + Tg2_6) ...
+                         + mu_in(7, k)*(N2_7*Z2(:, k) + L2_7*Yest2(:, k) + G2_7*U(:, k) + Tg2_7) ...
+                         + mu_in(8, k)*(N2_8*Z2(:, k) + L2_8*Yest2(:, k) + G2_8*U(:, k) + Tg2_8) ...
+                         + mu_in(9, k)*(N2_9*Z2(:, k) + L2_9*Yest2(:, k) + G2_9*U(:, k) + Tg2_9);
 
-        X_UIOO2(:, k) = Z2(:, k) - E2*J2(:, k);
+        X_UIOO2(:, k) = Z2(:, k) - E2*Yest2(:, k);
         
         % Residue 2
-        res2(:, k) = Yfail(:, k) - X_UIOO2(:, k);
+        res2(:, k) = Yfail(:, k) - C*X_UIOO2(:, k);
 
         % Error norm 2
         Error2(k) = sqrt(res2(3, k)^2);
         
-        if Error2(k) > 4e-4
+        if Error2(k) > threshold(4, k)
             FO2(k) = true;
         else
             FO2(k) = false;
@@ -326,15 +340,27 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         %% Actuator fault estimation
         % Actuator fault 1
         if ~FQ1(k) && FQ2(k) && ~FO1(k) && FO2(k)
-            Fact1(k) = Fact1(k);
+            if delay_1
+                Fact1(k) = Fact1(k);
+            else
+                delay_1 = 1;
+                Fact1(k) = 0;
+            end
         else
+            delay_1 = 0;
             Fact1(k) = 0;
         end
             
         % Actuator fault 2
         if FQ1(k) && ~FQ2(k) && FO1(k) && FO2(k)
-            Fact2(k) = Fact2(k);
+            if delay_2
+                Fact2(k) = Fact2(k);
+            else
+                delay_2 = 1;
+                Fact2(k) = 0;
+            end
         else
+            delay_2 = 0;
             Fact2(k) = 0;
         end
         
@@ -348,33 +374,9 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         
         % Sensor fault 2
         if FQ1(k) && FQ2(k) && ~FO1(k) && FO2(k)
-            Fsen2(k) = res1(3, k);
+            Fsen2(k) = res1(2, k);
         else
-            Fsen2(k) = zeros(size(res1(3, k)));
-        end
-                  
-        %% Setpoint
-        Xsp(1, k) = V_mid;
-        Xsp(3, k) = Tr_mid;
-    
-        if tk <= 10
-            Xsp(3, k) = Tr_min;
-        elseif tk <= 25
-            Xsp(3, k) = Tr_min+((Tr_mid-Tr_min)*(tk-10)/15);
-        elseif tk <= 65
-           Xsp(3, k) = Tr_mid;   
-        elseif tk <= 100
-            Xsp(3, k) = Tr_mid+((Tr_max-Tr_mid)*(tk-65)/35);
-        elseif tk <= 120
-            Xsp(3, k) = Tr_max-((Tr_max-Tr_mid)*(tk-100)/20);
-%         elseif tk <= 120
-%            Xsp(1, k) = V_min+((V_mid-V_min)*(tk-80)/15);
-        elseif tk <= 135
-           Xsp(1, k) = V_mid;   
-        elseif tk <= 150
-            Xsp(1, k) = V_mid+((V_max-V_mid)*(tk-135)/15);
-        elseif tk <= 200
-            Xsp(1, k) = V_max;
+            Fsen2(k) = zeros(size(res1(2, k)));
         end
         
         %% PID

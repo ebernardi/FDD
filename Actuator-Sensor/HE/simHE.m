@@ -97,12 +97,14 @@ Phi_1 = zeros(N, Nsim+1);           % Observer states
 X_UIO1 = zeros(nx, Nsim);           % Estimated states
 Error_1 = zeros(1, Nsim);             % Error
 Fact1 = zeros(1, Nsim);                % Estimated control Input
+FQ1 = zeros(1, Nsim);                  % Fault detect Q1
 
 % RUIO 2
 Phi_2 = zeros(N, Nsim+1);           % Observer states
 X_UIO2 = zeros(nx, Nsim);           % Estimated states
 Error_2 = zeros(1, Nsim);             % Error
 Fact2 = zeros(1, Nsim);                % Estimated control Input
+FQ2 = zeros(1, Nsim);                  % Fault detect Q2
 
 % UIOO 1
 Z1 = zeros(nx, Nsim+1);              % Observer states
@@ -111,6 +113,7 @@ X_UIOO1 = zeros(nx, Nsim);         % Estimated states
 res1 = zeros(nx, Nsim);                % Residue
 Error1 = zeros(1, Nsim);               % Error
 Fsen1 = zeros(1, Nsim);               % Estimated sensor fault
+FO1 = zeros(1, Nsim);                  % Fault detect S1
 
 % UIOO 2
 Z2 = zeros(nx, Nsim+1);              % Observer states
@@ -119,6 +122,7 @@ X_UIOO2 = zeros(nx, Nsim);         % Estimated states
 res2 = zeros(nx, Nsim);                % Residue
 Error2 = zeros(1, Nsim);               % Error
 Fsen2 = zeros(1, Nsim);               % Estimated sensor fault
+FO2 = zeros(1, Nsim);                  % Fault detect S2
 
 % Initial states and inputs
 X(:, 1) = x0;
@@ -223,9 +227,9 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu_out(9, k)*(H1_U9_1*(X(:, k+1) - H1_C9_tilde_1*Phi_1(:, k+1)) + H1_A9_bar_22*H1_U9_1*(H1_C9_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A9_bar_21*Phi_1(:, k) - H1_B9_bar_2*U(:, k) -  H1_delta9_bar_2);
 
         if Error_1(k) > threshold(1, k)
-            FQ1 = true;
+            FQ1(k) = true;
         else
-            FQ1 = false;
+            FQ1(k) = false;
         end
                   
         %% LPV-RUIO 2
@@ -264,9 +268,9 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
                       + mu_out(9, k)*(H2_U9_1*(X(:, k+1) - H2_C9_tilde_1*Phi_2(:, k+1)) + H2_A9_bar_22*H2_U9_1*(H2_C9_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A9_bar_21*Phi_2(:, k) - H2_B9_bar_2*U(:, k) -  H2_delta9_bar_2);
 
         if Error_2(k) > threshold(2, k)
-            FQ2 = true;
+            FQ2(k) = true;
         else
-            FQ2 = false;
+            FQ2(k) = false;
         end
         
         %% DLPV-UIOO 1
@@ -290,9 +294,9 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Error1(k) = sqrt(res1(1, k)^2);
         
         if Error1(k) > threshold(3, k)
-            FO1 = true;
+            FO1(k) = true;
         else
-            FO1 = false;
+            FO1(k) = false;
         end        
 
         %% DLPV-UIOO 2
@@ -316,14 +320,14 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Error2(k) = sqrt(res2(2, k)^2);
         
         if Error2(k) > threshold(4, k)
-            FO2 = true;
+            FO2(k) = true;
         else
-            FO2 = false;
+            FO2(k) = false;
         end
         
         %% Actuator fault estimation
         % Actuator fault 1
-        if ~FQ1 && FQ2 && FO1 && ~FO2
+        if ~FQ1(k) && FQ2(k) && FO1(k) && ~FO2(k)
             if delay_1
                 Fact1(k) = Fact1(k);
             else
@@ -336,7 +340,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
             
         % Actuator fault 2
-        if FQ1 && ~FQ2 && ~FO1 && FO2
+        if FQ1(k) && ~FQ2(k) && ~FO1(k) && FO2(k)
             if delay_2
                 Fact2(k) = Fact2(k);
             else
@@ -350,14 +354,14 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
 
         %% Sensor fault estimation
         % Sensor fault 1
-        if FO1 && ~FO2 && FQ1 && FQ2
+        if FO1(k) && ~FO2(k) && FQ1(k) && FQ2(k)
             Fsen1(k) = res2(1, k);
         else
             Fsen1(k) = zeros(size(res2(1, k)));
         end
         
         % Sensor fault 2
-        if ~FO1 && FO2 && FQ1 && FQ2
+        if ~FO1(k) && FO2(k) && FQ1(k) && FQ2(k)
             Fsen2(k) = res1(2, k);
         else
             Fsen2(k) = zeros(size(res1(2, k)));
