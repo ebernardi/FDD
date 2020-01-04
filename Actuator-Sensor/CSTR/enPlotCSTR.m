@@ -22,16 +22,15 @@ hold on
 plot(t, Y(1, :), 'b', 'LineWidth', 1.5);
 plot(t, Yfail(1, :), 'g--', 'LineWidth', 1.5);
 xlabel('Time [min]'); ylabel('V [l]'); grid on; hold off
-axis([0 inf 90 110])
-leg = legend('Setpoint', 'System', 'Measured');
-set(leg, 'Position', [0.139 0.795 0.16 0.119], 'FontSize', 8);
+axis([0 inf 90 112])
+leg = legend('Setpoint', 'System', 'Measured', 'Location', 'SouthEast');
 leg.ItemTokenSize = [20, 15];
 subplot(312)
 plot(t, Y(2, :), 'b', 'LineWidth', 1.5);
 hold on
 plot(t, Yfail(2, :), 'g--', 'LineWidth', 1.5);
 xlabel('Time [min]'); ylabel('C_A [mol/l]'); grid on; hold off
-axis([0 inf 0.05 0.15])
+axis([0 inf 0.04 0.12])
 subplot(313)
 plot(t, Xsp(3, :), 'r:', 'LineWidth', 1.5);   
 hold on
@@ -41,10 +40,10 @@ xlabel('Time [min]'); ylabel('T [K]'); grid on; hold off
 axis([0 inf 430 460])
 
 % Create textarrow
-annotation(fig, 'textarrow',[0.712 0.749], [0.8 0.826], ...
+annotation(fig, 'textarrow',[0.301 0.357], [0.855 0.813], ...
     'String', {'Sensor fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
-annotation(fig, 'textarrow', [0.494 0.561], [0.504 0.518], ...
+annotation(fig, 'textarrow', [0.746 0.793], [0.198 0.231], ...
     'String', {'Difference due to', 'sensor fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
 print -dsvg figs/FDD_CSTR_state.svg
@@ -57,7 +56,7 @@ hold on
 stairs(t, Ufail(1, :), 'g--', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('Q_1 [l/min]'); grid on
 axis([0 inf 94 102])
-leg = legend('Faulty', 'Compensated');
+leg = legend('Faulty', 'Compensated', 'Location', 'SouthEast');
 leg.ItemTokenSize = [20, 18];
 subplot(212)
 stairs(t, U(2, 1:end-1), 'b', 'LineWidth', 1.5)
@@ -67,10 +66,10 @@ xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
 axis([0 inf 80 110])
 
 % Create textarrow
-annotation(fig, 'textarrow',[0.323 0.359], [0.223 0.266], ...
+annotation(fig, 'textarrow',[0.531 0.551], [0.234 0.285], ...
     'String', {'Actuator fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
-annotation(fig, 'textarrow', [0.228 0.227], [0.77 0.834], ...
+annotation(fig, 'textarrow', [0.329 0.287], [0.722 0.703], ...
     'String', {'Difference due to', 'actuator fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
 print -dsvg figs/FDD_CSTR_input.svg
@@ -82,7 +81,7 @@ stairs(t, Error_1, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(1, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{Q_1}'); grid on
-axis([0 inf 0 1.5])
+axis([0 inf 0 2])
 subplot(212)
 stairs(t, Error_2, 'b', 'LineWidth', 1.5)
 hold on
@@ -93,17 +92,17 @@ axis([0 inf 0 0.3])
 %% UIOO error
 figure('Name', 'UIOO error')
 subplot(211)
-stairs(t, Error1, 'b', 'LineWidth', 1.5)
+plot(t, Error1, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(3, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{\theta_1}'); grid on
-axis([0 inf 0 4e-4])
+axis([0 inf 0 3.5e-4])
 subplot(212)
-stairs(t, Error2, 'b', 'LineWidth', 1.5)
+plot(t, Error2, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(4, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{\theta_2}'); grid on
-axis([0 inf 0 2e-2])
+axis([0 inf 0 2.2e-2])
 
 %% Actuator fault estimation
 fig = figure('Name', 'Actuator fault estimation');
@@ -120,28 +119,30 @@ stairs(t, Fact2, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Ufails(2, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
-axis([0 inf -5.5 0.1])
+axis([0 inf -5.5 0.25])
 
 % Create axes
-ax = axes('Parent', fig, 'Position', [0.372 0.69 0.262 0.2], 'FontSize', 8);
+ax = axes('Parent', fig, 'Position', [0.4 0.69 0.226 0.2], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, Fact1, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Ufails(1, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [25 60]); ylim(ax, [0 5.5]);
+xlim(ax, [29.5 35]); ylim(ax, [0 1.8]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create axes
-ax = axes('Parent', fig, 'Position', [0.668 0.179 0.203 0.165], 'FontSize', 8);
+ax = axes('Parent', fig, 'Position', [0.259 0.202 0.203 0.165], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, Fact2, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Ufails(2, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [260 320]); ylim(ax, [-0.434 -0.424]);
+xlim(ax, [440 500]); ylim(ax, [-5.1 -4.9]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create textarrow
-annotation(fig, 'textarrow', [0.543 0.556], [0.303 0.336], ...
-    'String', {'Detection', 'error'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
-    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.518 0.485], [0.7313 0.731], ...
+    'String', {'Threshold', 'effect'}, 'LineWidth', 1, ...
+    'HorizontalAlignment', 'center', 'HeadWidth', 6, ...
+    'HeadLength', 6, 'FontSize', 8);
+
 print -dsvg figs/FDD_CSTR_RUIOestimation.svg
 
 %% Sensor fault estimation
@@ -150,31 +151,31 @@ subplot(211)
 stairs(t, Fsen1, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(1, :) - Y(1, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
-xlabel('Time [min]'); ylabel('Volume [l]'); grid on
-axis([0 inf -1.25 0.25])
+xlabel('Time [min]'); ylabel('V [l]'); grid on
+axis([0 inf -2 0.25])
 leg = legend('Estimation', 'Fault', 'Location', 'SouthWest');
 leg.ItemTokenSize = [20, 15];
 subplot(212)
 stairs(t, Fsen2, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(3, :) - Y(3, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
-xlabel('Time [min]'); ylabel('Temperature [K]'); grid on
-axis([0 inf -4.5 0.5])
+xlabel('Time [min]'); ylabel('T [K]'); grid on
+axis([0 inf -0.5 5])
 
 % Create axes
-ax = axes('Parent', fig, 'Position', [0.421 0.654 0.229 0.2], 'FontSize', 8);
+ax = axes('Parent', fig, 'Position', [0.585 0.657 0.229 0.2], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, Fsen1, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Yfail(1, :) - Y(1, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [578 590]); ylim(ax, [-2 0]);
+xlim(ax, [250 310]); ylim(ax, [-1.6 -1.2]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create axes
-ax = axes('Parent', fig, 'Position', [0.248 0.233 0.203 0.165], 'FontSize', 8);
+ax = axes('Parent', fig, 'Position', [0.319 0.229 0.266 0.165], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, Fsen2, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Yfail(3, :) - Y(3, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [400 510]); ylim(ax, [-4 0]);
+xlim(ax, [610 660]); ylim(ax, [4.1 4.6]);
 box(ax, 'on'); grid(ax, 'on');
 
 print -dsvg figs/FDD_CSTR_UIOOestimation.svg
@@ -194,6 +195,6 @@ axis([0 inf 0 1]);
 xlabel('Tiempo [min]'); ylabel('\mu_i');% yticks([0 0.2 0.4 0.6 0.8 1]); yticklabels({'0', '0,2', '0,4', '0,6', '0,8', '1'});
 pbaspect([2 1 1]);
 leg = legend('\mu_1', '\mu_2', '\mu_3', '\mu_4', '\mu_5', '\mu_6', '\mu_7', '\mu_8', '\mu_9', 'Location', 'East');
-set(leg, 'Position', [0.159 0.307 0.077 0.418], 'FontSize', 8);
+set(leg, 'Position', [0.748 0.307 0.075 0.418], 'FontSize', 8);
 leg.ItemTokenSize = [20, 18];
 print -dsvg figs/FDD_CSTR_member.svg

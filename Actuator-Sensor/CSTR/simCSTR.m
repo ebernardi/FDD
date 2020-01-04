@@ -1,7 +1,7 @@
 %% CSTR
 clc; clear; close all;
 yalmip('clear');
-
+ 
 %% Load polytope and observer matrices
 load polyObs
 
@@ -10,8 +10,8 @@ Time = 720.1;                         % Simulation end time
 Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time
-Fact_1 = 5; Fact_2 = 5;          % Actuator fault magnitude
-Fsen_1 = 1; Fsen_2 = 4;        % Sensor fault magnitude
+Fact_1 = 5; Fact_2 = 5;          % Actuator fault magnitude [5% 5%]
+Fsen_1 = 1.5; Fsen_2 = -4.5;        % Sensor fault magnitude [2% 0 1%]
 
 % %% Polytope model
 % V_min = 90;		% Volumen mínimo (m^3)
@@ -52,17 +52,17 @@ Fsen_1 = 1; Fsen_2 = 4;        % Sensor fault magnitude
 % save polyObs.mat
 
 %% Noise
-sig = 3e-4*([1 1e-5 1])';    % Ouput noise sigma
+sig = 1e-3*([1e-1 1e-3 1])';    % Ouput noise sigma
 
 rng default;                        % Random seed start
 v = sig*randn(1, Nsim);    % Measurement noise v~N(0, sig)
 
 %% Error detection threshold
 Tau = 10;    % period
-mag_1 = 1e-1;     % Value Q1
-mag_2 = 6e-4;     % Value Q2
-mag_3 = 2e-5;     % Value O1 %3e-4
-mag_4 = 4e-4;     % Value O2
+mag_1 = 8.5e-2;     % Value Q1
+mag_2 = 4e-3;     % Value Q2
+mag_3 = 2.2e-5;     % Value O1
+mag_4 = 4e-4;     % Value O2 2e-1
 
 threshold = zeros(4, Nsim);
 
@@ -152,8 +152,8 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
-        if tk > 220 && tk < 320
-            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-220)/10))];
+        if tk > 400 && tk < 500
+            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-400)/10))];
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
@@ -165,24 +165,24 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         %% Sensor fault income
         Yfail(:, k) = Y(:, k);
 
-        if tk >400 && tk < 450
-            Yfail(:, k) = Y(:, k) +[0; 0; -Fsen_2 + Fsen_2*(exp(-(tk-400)/5))];
+        if tk >220 && tk < 300
+          Yfail(:, k) = Y(:, k) + [-Fsen_1 + Fsen_1*(exp(-(tk-220)/10)); 0; 0];  
         end
         
-        if tk >= 450 && tk < 500
-            Yfail(:, k) = Y(:, k) + [0; 0; - Fsen_2*(exp(-(tk-450)/3))];
+        if tk >= 300 && tk < 320
+            Yfail(:, k) = Y(:, k) + [- Fsen_1*(exp(-(tk-300))); 0; 0];
         end
 
-        if tk > 580 && tk < 650
-            Yfail(:, k) = Y(:, k) + [-Fsen_1 + Fsen_1*(exp(-3*(tk-580)/4)); 0; 0];
+        if tk > 580 && tk < 660
+            Yfail(:, k) = Y(:, k) +[0; 0; -Fsen_2 + Fsen_2*(exp(-(tk-580)/15))];
         end
         
-        if tk >= 650 && tk < 680
-            Yfail(:, k) = Y(:, k) + [- Fsen_1*(exp(-2*(tk-650))); 0; 0];
+        if tk >= 660 && tk < 680
+            Yfail(:, k) = Y(:, k) + [0; 0; - Fsen_2*(exp(-(tk-660)))];
         end
         
         %% Setpoint
-        Xsp(1, k) = V_mid;
+        Xsp(1, k) = V_mid-2;
         Xsp(3, k) = Tr_mid;
     
         if tk < 160
@@ -190,18 +190,22 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         elseif tk >= 160 && tk < 200
             Xsp(3, k) = Tr_min+((Tr_mid-Tr_min)*(tk-160)/40);
         elseif tk >= 200 && tk < 340
-           Xsp(3, k) = Tr_mid;   
+            Xsp(3, k) = Tr_mid;   
         elseif tk >= 340 && tk < 380
-            Xsp(3, k) = Tr_mid+((Tr_max-Tr_mid)*(tk-340)/40);
+            Xsp(1, k) = V_mid-2+((V_max-V_mid+2)*(tk-340)/40);
         elseif tk >= 380 && tk < 520
-            Xsp(3, k) = Tr_max-((Tr_max-Tr_mid)*(tk-380)/140);
+            Xsp(1, k) = V_max;
         elseif tk >= 520 && tk < 560
-           Xsp(1, k) = V_mid;   
+            Xsp(3, k) = Tr_mid+((Tr_max-Tr_mid)*(tk-520)/40);
+            Xsp(1, k) = V_max;
+        elseif tk >= 560 && tk < 740
+            Xsp(3, k) = Tr_max;
+            Xsp(1, k) = V_max;
         end
         
         %% Membership
         mu_out(:, k) = membership(Yfail(:, k), V_min, V_mid, V_max, Tr_min, Tr_mid, Tr_max);
-        mu_in(:, k) = membership(Yfail(:, k), V_min, V_mid, V_max, Tr_min, Tr_mid, Tr_max);
+        mu_in(:, k) = membership(Y(:, k), V_min, V_mid, V_max, Tr_min, Tr_mid, Tr_max);
       
         %% LPV-RUIO 1
         Phi_1(:, k+1) = mu_out(1, k)*(H1_K1*Phi_1(:, k) + H1_L1_ast*Yfail(:, k) + H1_B1_bar_1*U(:, k) + H1_delta1_bar_1) ...
@@ -286,7 +290,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
         
         %% DLPV-UIOO 1
-        Yest1(:, k) = Yfail([1 2], k);
+        Yest1(:, k) = T2_1*Yfail(:, k);
         Z1(:, k+1) = mu_in(1, k)*(N1_1*Z1(:, k) + L1_1*Yest1(:, k) + G1_1*U(:, k) + Tg1_1) ...
                          + mu_in(2, k)*(N1_2*Z1(:, k) + L1_2*Yest1(:, k) + G1_2*U(:, k) + Tg1_2) ...
                          + mu_in(3, k)*(N1_3*Z1(:, k) + L1_3*Yest1(:, k) + G1_3*U(:, k) + Tg1_3) ...
@@ -312,7 +316,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
             
         %% DLPV-UIOO 2
-        Yest2(:, k) = Yfail([2 3], k);
+        Yest2(:, k) = T2_2*Yfail(:, k);
         Z2(:, k+1) = mu_in(1, k)*(N2_1*Z2(:, k) + L2_1*Yest2(:, k) + G2_1*U(:, k) + Tg2_1) ...
                          + mu_in(2, k)*(N2_2*Z2(:, k) + L2_2*Yest2(:, k) + G2_2*U(:, k) + Tg2_2) ...
                          + mu_in(3, k)*(N2_3*Z2(:, k) + L2_3*Yest2(:, k) + G2_3*U(:, k) + Tg2_3) ...
@@ -366,7 +370,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         
         %% Sensor fault estimation
         % Sensor fault 1
-        if ~FQ1(k) && ~FQ2(k) && FO1(k) && ~FO2(k)
+        if FQ1(k) && ~FQ2(k) && FO1(k) && ~FO2(k)
             Fsen1(k) = res2(1, k);
         else
             Fsen1(k) = zeros(size(res2(1, k)));
@@ -374,9 +378,9 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         
         % Sensor fault 2
         if FQ1(k) && FQ2(k) && ~FO1(k) && FO2(k)
-            Fsen2(k) = res1(2, k);
+            Fsen2(k) = res1(3, k);
         else
-            Fsen2(k) = zeros(size(res1(2, k)));
+            Fsen2(k) = zeros(size(res1(3, k)));
         end
         
         %% PID
