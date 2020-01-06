@@ -11,16 +11,16 @@ Ts = 0.05;                              % Sample time [min] (3 seg)
 Nsim = Time/Ts;                    % Simulation steps
 t = 0:Ts:Time-Ts;                   % Simulation time
 Fact_1 = 5; Fact_2 = 0.43;   % Actuator fault magnitude [5%, 5%]
-Fsen_1 = 2.5; Fsen_2 = 3.5;	% Sensor fault magnitude [0.5% 0.5%]
+Fsen_1 = 2.5; Fsen_2 = -3.5;	% Sensor fault magnitude [0.5% 0.5%]
 
 % %% Polytope model and observers
 % Theta_1s_min = 495;     % Temperatura mínima de salida de fluido 1 (K)
 % Theta_1s_mid = 497.32;     % Temperatura media de salida de fluido 1 (K)
 % Theta_1s_max = 500;     % Temperatura máxima de salida de fluido 1 (K)
 % 
-% Theta_2s_min = 662;     % Temperatura mínima de salida de fluido 2 (K)
+% Theta_2s_min = 680;     % Temperatura mínima de salida de fluido 2 (K)
 % Theta_2s_mid = 695.915;     % Temperatura media de salida de fluido 2 (K)
-% Theta_2s_max = 725;     % Temperatura máxima de salida de fluido 2 (K)
+% Theta_2s_max = 710;     % Temperatura máxima de salida de fluido 2 (K)
 % 
 % run HE_polytope;
 % M = 9;
@@ -55,10 +55,10 @@ v = sig*randn(1, Nsim);    % Measurement noise v~N(0, sig)
 
 %% Error detection threshold
 Tau = 10;    % period
-mag_1 = 4e-2;     % Value Q1
+mag_1 = 1.3e-1;     % Value Q1
 mag_2 = 5e-2;     % Value Q2
-mag_3 = 4e-3;     % Value O1 %3e-4
-mag_4 = 1e-1;     % Value O2
+mag_3 = 6e-2;     % Value O1 %3e-4
+mag_4 = 1.3e-1;     % Value O2 %1e-1
 
 threshold = zeros(4, Nsim);
 
@@ -148,8 +148,8 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
-        if tk > 220 && tk < 320
-            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-220)/10))];
+        if tk > 580 && tk < 680
+            Ufails(:, k) = [0; -Fact_2+Fact_2*(exp(-(tk-580)/10))];
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
@@ -161,22 +161,22 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         %% Sensor fault income
         Yfail(:, k) = Y(:, k);
 
-        if tk >400 && tk < 500
-            Yfail(:, k) = Y(:, k) + [0; Fsen_2-Fsen_2*(exp(-(tk-400)/5)); 0];
+        if tk > 220 && tk < 320
+            Yfail(:, k) = Y(:, k) + [0; Fsen_2-Fsen_2*(exp(-(tk-220)/5)); 0];
         end
 
-        if tk > 580 && tk < 680
-            Yfail(:, k) = Y(:, k) + [-Fsen_1+Fsen_1*(exp(-(tk-580)/6)); 0; 0];
+        if tk >400 && tk < 500
+            Yfail(:, k) = Y(:, k) + [Fsen_1-Fsen_1*(exp(-(tk-400)/6)); 0; 0];
         end
         
         %% Setpoint
-        Xsp(1, k) = Theta_1s_mid;
+        Xsp(1, k) = Theta_1s_mid+2;
         Xsp(2, k) = Theta_2s_mid;
 
         if tk < 160
-            Xsp(1, k) = Theta_1s_min;
+            Xsp(1, k) = Theta_1s_min+2;
         elseif tk >= 160 && tk < 200
-            Xsp(1, k) = Theta_1s_min+((Theta_1s_mid-Theta_1s_min)*(tk-160)/40);
+            Xsp(1, k) = Theta_1s_min+2+((Theta_1s_mid-Theta_1s_min-2)*(tk-160)/40);
         elseif tk >= 200 && tk < 340
             Xsp(1, k) = Theta_1s_mid;
          elseif tk >= 340 && tk < 380
@@ -184,7 +184,11 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         elseif tk >= 380 && tk < 520
             Xsp(1, k) = Theta_1s_max;
         elseif tk >= 520 && tk < 560
-            Xsp(1, k) = Theta_1s_max-((Theta_1s_max-Theta_1s_mid)*(tk-520)/40);
+            Xsp(1, k) = Theta_1s_max;
+            Xsp(2, k) = Theta_2s_mid-((Theta_2s_mid-Theta_2s_min)*(tk-520)/40);
+        elseif tk >= 560 && tk < 740
+            Xsp(1, k) = Theta_1s_max;
+            Xsp(2, k) = Theta_2s_min;
         end        
         
         %% membership
@@ -354,14 +358,14 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
 
         %% Sensor fault estimation
         % Sensor fault 1
-        if FO1(k) && ~FO2(k) && FQ1(k) && FQ2(k)
+        if FQ1(k) && FQ2(k) && FO1(k) && ~FO2(k)
             Fsen1(k) = res2(1, k);
         else
             Fsen1(k) = zeros(size(res2(1, k)));
         end
         
         % Sensor fault 2
-        if ~FO1(k) && FO2(k) && FQ1(k) && FQ2(k)
+        if FQ1(k) && FQ2(k) && ~FO1(k) && FO2(k)
             Fsen2(k) = res1(2, k);
         else
             Fsen2(k) = zeros(size(res1(2, k)));
