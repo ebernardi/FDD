@@ -67,8 +67,8 @@ leg = legend('Faulty', 'Compensated', 'Location', 'SouthWest');
 leg.ItemTokenSize = [20, 18];
 
 % Create textarrow
-annotation(fig, 'textarrow',[0.202 0.175], [0.743 0.824], ...
-    'String', {'Actuator', 'abrupt fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
+annotation(fig, 'textarrow',[0.202 0.175], [0.799 0.880], ...
+    'String', {'Actuator fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
 annotation(fig, 'textarrow', [0.799 0.8], [0.302 0.235], ...
     'String', {'Difference due to', 'actuator fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
@@ -128,22 +128,22 @@ ax = axes('Parent', fig, 'Position', [0.319 0.716 0.2 0.167], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, Fact1, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Ufails(1, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [28 68]); ylim(ax, [4.7 5.3]);
+xlim(ax, [28 60]); ylim(ax, [0 5]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create axes
-ax = axes('Parent', fig, 'Position', [0.327 0.175 0.255 0.200], 'FontSize', 8);
+ax = axes('Parent', fig, 'Position', [0.327 0.211 0.255 0.165], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, Fact2, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Ufails(2, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [579 586]); ylim(ax, [-0.15 0]);
+xlim(ax, [620 680]); ylim(ax, [-0.432 -0.426]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create textarrow
 annotation(fig, 'textarrow', [0.597 0.573], [0.705 0.733], ...
     'String', {'Detection', 'error'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
-annotation(fig, 'textarrow', [0.457 0.401], [0.308 0.334], ...
+annotation(fig, 'textarrow', [0.400 0.366], [0.754 0.739], ...
     'String', {'Threshold', 'effect'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
 

@@ -144,7 +144,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Ufails(:, k) = [0; 0];
 
         if tk > 30 && tk < 130
-            Ufails(:, k) = [Fact_1-Fact_1*(exp(-(tk-30)/10)); 0];
+            Ufails(:, k) = [Fact_1; 0]; %-Fact_1*(exp(-(tk-30)/10)); 0];
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
