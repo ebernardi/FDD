@@ -170,24 +170,24 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
         
         %% Setpoint
-        Xsp(1, k) = Theta_1s_mid+2;
+        Xsp(1, k) = Theta_1s_mid;
         Xsp(2, k) = Theta_2s_mid;
 
         if tk < 160
-            Xsp(1, k) = Theta_1s_min+2;
+            Xsp(1, k) = Theta_1s_min;
         elseif tk >= 160 && tk < 200
-            Xsp(1, k) = Theta_1s_min+2+((Theta_1s_mid-Theta_1s_min-2)*(tk-160)/40);
+            Xsp(1, k) = Theta_1s_min+((Theta_1s_mid-Theta_1s_min)*(tk-160)/40);
         elseif tk >= 200 && tk < 340
             Xsp(1, k) = Theta_1s_mid;
          elseif tk >= 340 && tk < 380
-            Xsp(1, k) = Theta_1s_mid+((Theta_1s_max-Theta_1s_mid)*(tk-340)/40);
+            Xsp(1, k) = Theta_1s_mid+((Theta_1s_max-2-Theta_1s_mid)*(tk-340)/40);
         elseif tk >= 380 && tk < 520
-            Xsp(1, k) = Theta_1s_max;
+            Xsp(1, k) = Theta_1s_max-2;
         elseif tk >= 520 && tk < 560
-            Xsp(1, k) = Theta_1s_max;
+            Xsp(1, k) = Theta_1s_max-2;
             Xsp(2, k) = Theta_2s_mid-((Theta_2s_mid-Theta_2s_min)*(tk-520)/40);
         elseif tk >= 560 && tk < 740
-            Xsp(1, k) = Theta_1s_max;
+            Xsp(1, k) = Theta_1s_max-2;
             Xsp(2, k) = Theta_2s_min;
         end        
         

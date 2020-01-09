@@ -22,9 +22,9 @@ hold on
 plot(t, Y(1, :), 'b:', 'LineWidth', 1.5);
 plot(t, Yfail(1, :), 'g--', 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\theta_{1_s} [K]'); grid on
-axis([0 inf 494.5 500.5])
+axis([0 inf 494 499])
 leg = legend('Setpoint', 'System', 'Measured', 'Location', 'SouthEast');
-% set(leg, 'Position', [0.139 0.795 0.16 0.119], 'FontSize', 8);
+set(leg, 'Position', [0.748 0.764 0.148 0.109], 'FontSize', 8);
 leg.ItemTokenSize = [20, 15];
 subplot(312)
 plot(t, Xsp(2, :), 'r-.', 'LineWidth', 1.5);
@@ -38,13 +38,13 @@ plot(t, Y(3, :), 'b:', 'LineWidth', 1.5);
 hold on
 plot(t, Yfail(3, :), 'g--', 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\theta_p [K]'); grid on
-axis([0 inf 555 565])
+axis([0 inf 554 562])
 
 % Create textarrow
 annotation(fig, 'textarrow',[0.325 0.355], [0.538 0.563], ...
     'String', {'Sensor fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
-annotation(fig, 'textarrow', [0.522 0.573], [0.792 0.83], ...
+annotation(fig, 'textarrow', [0.529 0.563], [0.799 0.822], ...
     'String', {'Difference due to', 'sensor fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
 print -dsvg figs/FDD_HE_state.svg
@@ -67,7 +67,7 @@ leg = legend('Faulty', 'Compensated', 'Location', 'SouthWest');
 leg.ItemTokenSize = [20, 18];
 
 % Create textarrow
-annotation(fig, 'textarrow',[0.21 0.175], [0.835 0.807], ...
+annotation(fig, 'textarrow',[0.201 0.166], [0.799 0.880], ...
     'String', {'Actuator fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
 annotation(fig, 'textarrow', [0.799 0.8], [0.302 0.235], ...
@@ -88,7 +88,7 @@ stairs(t, Error_2, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(2, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{Q_2}'); grid on
-axis([0 inf 0 1.2])
+axis([0 inf 0 1.3])
 
 %% UIOO error
 figure('Name', 'UIOO error')
@@ -98,7 +98,7 @@ hold on
 plot(t, threshold(3, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{\theta_1}'); grid on
 % axis([0 inf 0 6e-3])
-axis([0 inf 0 1.2])
+axis([0 inf 0 1.5])
 subplot(212)
 stairs(t, Error2, 'b', 'LineWidth', 1.5)
 hold on
@@ -140,7 +140,7 @@ xlim(ax, [620 680]); ylim(ax, [-0.432 -0.426]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create textarrow
-annotation(fig, 'textarrow', [0.616 0.573], [0.733 0.714], ...
+annotation(fig, 'textarrow', [0.597 0.573], [0.705 0.733], ...
     'String', {'Detection', 'error'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
 annotation(fig, 'textarrow', [0.400 0.366], [0.754 0.739], ...
@@ -179,7 +179,7 @@ ax = axes('Parent', fig, 'Position', [0.572 0.192 0.243 0.193], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, Fsen2, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Yfail(2, :) - Y(2, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [240 310]); ylim(ax, [-3.7 -3.4]);
+xlim(ax, [240 310]); ylim(ax, [-3.65 -3.35]);
 box(ax, 'on'); grid(ax, 'on');
 
 print -dsvg figs/FDD_HE_UIOOestimation.svg
