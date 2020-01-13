@@ -54,7 +54,7 @@ subplot(211)
 stairs(t, U(1, 1:end-1), 'b', 'LineWidth', 1.5)
 hold on
 stairs(t, Ufail(1, :), 'g--', 'linewidth', 1.5); hold off;
-xlabel('Time [min]'); ylabel('Q_1 [l/min]'); grid on
+xlabel('Time [min]'); ylabel('Q_s [l/min]'); grid on
 axis([0 inf 94 102])
 leg = legend('Faulty', 'Compensated', 'Location', 'SouthEast');
 leg.ItemTokenSize = [20, 18];
@@ -62,7 +62,7 @@ subplot(212)
 stairs(t, U(2, 1:end-1), 'b', 'LineWidth', 1.5)
 hold on
 stairs(t, Ufail(2, :), 'g--', 'linewidth', 1.5); hold off;
-xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
+xlabel('Time [min]'); ylabel('Q_c [l/min]'); grid on
 axis([0 inf 80 110])
 
 % Create textarrow
@@ -80,13 +80,13 @@ subplot(211)
 stairs(t, Error_1, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(1, :), '-.r', 'linewidth', 1.5); hold off;
-xlabel('Time [min]'); ylabel('|e|_{Q_1}'); grid on
+xlabel('Time [min]'); ylabel('|e|_{Q_s}'); grid on
 axis([0 inf 0 2])
 subplot(212)
 stairs(t, Error_2, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(2, :), '-.r', 'linewidth', 1.5); hold off;
-xlabel('Time [min]'); ylabel('|e|_{Q_2}'); grid on
+xlabel('Time [min]'); ylabel('|e|_{Q_c}'); grid on
 axis([0 inf 0 0.3])
 
 %% UIOO error
@@ -95,13 +95,13 @@ subplot(211)
 plot(t, Error1, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(3, :), '-.r', 'linewidth', 1.5); hold off;
-xlabel('Time [min]'); ylabel('|e|_{\theta_1}'); grid on
+xlabel('Time [min]'); ylabel('|e|_V'); grid on
 axis([0 inf 0 3.5e-4])
 subplot(212)
 plot(t, Error2, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(4, :), '-.r', 'linewidth', 1.5); hold off;
-xlabel('Time [min]'); ylabel('|e|_{\theta_2}'); grid on
+xlabel('Time [min]'); ylabel('|e|_T'); grid on
 axis([0 inf 0 2.2e-2])
 
 %% Actuator fault estimation
@@ -110,7 +110,7 @@ subplot(211)
 stairs(t, Fact1, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Ufails(1, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
-xlabel('Time [min]'); ylabel('Q_1 [l/min]'); grid on
+xlabel('Time [min]'); ylabel('Q_s [l/min]'); grid on
 axis([0 inf -0.5 5.5])
 leg = legend('Estimation', 'Fault');
 leg.ItemTokenSize = [20, 15];
@@ -118,7 +118,7 @@ subplot(212)
 stairs(t, Fact2, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Ufails(2, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
-xlabel('Time [min]'); ylabel('Q_2 [l/min]'); grid on
+xlabel('Time [min]'); ylabel('Q_c [l/min]'); grid on
 axis([0 inf -5.5 0.25])
 
 % Create axes

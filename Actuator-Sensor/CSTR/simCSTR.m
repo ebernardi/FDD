@@ -11,7 +11,7 @@ Ts = 0.05;                               % Sample time [min]
 Nsim = Time/Ts;                     % Simulation steps
 t = 0:Ts:Time-Ts;                    % Simulation time
 Fact_1 = 5; Fact_2 = 5;          % Actuator fault magnitude [5% 5%]
-Fsen_1 = 1.5; Fsen_2 = -4.5;        % Sensor fault magnitude [2% 0 1%]
+Fsen_1 = 1.5; Fsen_2 = -4.5;        % Sensor fault magnitude [1.5% 0 1%]
 
 % %% Polytope model
 % V_min = 90;		% Volumen mínimo (m^3)
@@ -165,7 +165,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         %% Sensor fault income
         Yfail(:, k) = Y(:, k);
 
-        if tk >220 && tk < 300
+        if tk > 220 && tk < 300
           Yfail(:, k) = Y(:, k) + [-Fsen_1 + Fsen_1*(exp(-(tk-220)/10)); 0; 0];  
         end
         

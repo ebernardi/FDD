@@ -19,17 +19,17 @@ fig = figure('Name', 'States');
 subplot(311)
 plot(t, Xsp(1, :), 'r-.', 'LineWidth', 1.5);
 hold on
-plot(t, Y(1, :), 'b:', 'LineWidth', 1.5);
+plot(t, Yfail(1, :)-Fsen1, 'b:', 'LineWidth', 1.5);
 plot(t, Yfail(1, :), 'g--', 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\theta_{1_s} [K]'); grid on
 axis([0 inf 494 499])
-leg = legend('Setpoint', 'System', 'Measured', 'Location', 'SouthEast');
+leg = legend('Setpoint', 'Estimated', 'Measured', 'Location', 'SouthEast');
 set(leg, 'Position', [0.748 0.764 0.148 0.109], 'FontSize', 8);
 leg.ItemTokenSize = [20, 15];
 subplot(312)
 plot(t, Xsp(2, :), 'r-.', 'LineWidth', 1.5);
 hold on
-plot(t, Y(2, :), 'b:', 'LineWidth', 1.5);
+plot(t, Yfail(2, :)-Fsen2, 'b:', 'LineWidth', 1.5);
 plot(t, Yfail(2, :), 'g--', 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('\theta_{2_s} [K]'); grid on
 axis([0 inf 675 705])
@@ -67,7 +67,7 @@ leg = legend('Faulty', 'Compensated', 'Location', 'SouthWest');
 leg.ItemTokenSize = [20, 18];
 
 % Create textarrow
-annotation(fig, 'textarrow',[0.202 0.175], [0.743 0.824], ...
+annotation(fig, 'textarrow', [0.202 0.175], [0.743 0.824], ...
     'String', {'Actuator', 'abrupt fault', 'income'}, 'LineWidth', 1, 'HorizontalAlignment', 'center', ...
     'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
 annotation(fig, 'textarrow', [0.799 0.8], [0.302 0.235], ...
@@ -76,7 +76,7 @@ annotation(fig, 'textarrow', [0.799 0.8], [0.302 0.235], ...
 print -dsvg figs/FDD_HE_input.svg
 
 %% RUIO error
-figure('Name', 'RUIO error')
+fig = figure('Name', 'RUIO error');
 subplot(211)
 stairs(t, Error_1, 'b', 'LineWidth', 1.5)
 hold on
@@ -89,9 +89,37 @@ hold on
 plot(t, threshold(2, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{Q_2}'); grid on
 axis([0 inf 0 1.3])
+leg = legend('Residue', 'Threshold');
+leg.ItemTokenSize = [20, 18];
+
+% Create textarrow
+annotation(fig, 'textarrow', [0.335 0.357], [0.654 0.626], ...
+    'String', {'Fault', 'detection'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.523 0.55], [0.259 0.233], ...
+    'String', {'Exponential', 'sensor fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'arrow', [0.435 0.426], [0.247 0.197], 'LineWidth', 1, ...
+    'HeadWidth', 6, 'HeadLength', 6);
+annotation(fig, 'textarrow', [0.221 0.221], [0.262 0.209], ...
+    'String', {'Abrupt', 'actuator fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.5 0.484], [0.714 0.685], ...
+    'String', {'Exponential', 'sensor fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'arrow', [0.607 0.616], [0.714 0.664], 'LineWidth', 1, ...
+    'HeadWidth', 6, 'HeadLength', 6);
+annotation(fig, 'textarrow', [0.741 0.757], [0.842 0.819], ...
+    'String', {'Exponential', 'actuator fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.789 0.789], [0.171 0.133], ...
+    'String', {'Modelling', 'errors'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+
+print -dsvg figs/FDD_HE_RUIOerror.svg
 
 %% UIOO error
-figure('Name', 'UIOO error')
+fig = figure('Name', 'UIOO error');
 subplot(211)
 stairs(t, Error1, 'b', 'LineWidth', 1.5)
 hold on
@@ -99,12 +127,39 @@ plot(t, threshold(3, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{\theta_1}'); grid on
 % axis([0 inf 0 6e-3])
 axis([0 inf 0 1.5])
+leg = legend('Residue', 'Threshold');
+leg.ItemTokenSize = [20, 18];
 subplot(212)
 stairs(t, Error2, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(4, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{\theta_2}'); grid on
 axis([0 inf 0 2.2])
+
+% Create textarrow
+annotation(fig, 'textarrow', [0.526 0.551], [0.659 0.623], ...
+    'String', {'Fault', 'detection'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.532 0.562], [0.864 0.845], ...
+    'String', {'Exponential', 'sensor fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.21 0.21], [0.728 0.671], ...
+    'String', {'Abrupt', 'actuator fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.169 0.142], [0.185 0.157], ...
+    'String', {'Exponential', 'threshold', 'convergence'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.337 0.367], [0.395 0.376], ...
+    'String', {'Exponential', 'sensor fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.73 0.759], [0.359 0.333], ...
+    'String', {'Exponential', 'actuator fault'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+annotation(fig, 'textarrow', [0.659 0.687], [0.164 0.138], ...
+    'String', {'Modelling', 'errors'}, 'LineWidth', 1, 'HorizontalAlignment','center', ...
+    'HeadWidth', 6, 'HeadLength', 6, 'FontSize', 8);
+
+print -dsvg figs/FDD_HE_UIOOerror.svg
 
 %% Actuator fault estimation
 fig = figure('Name', 'Actuator fault estimation');
