@@ -2,7 +2,7 @@
 Observer-based Fault Detection and Diagnostic Tools
 
 ## Requirements
-- At least an i5-3337U CPU@2.7 GHz (2 Cores) with 8 GB of RAM.
+- At least an i5-3337U CPU@2.7 GHz (2 Cores) with 6 GB of RAM.
 - Matlab software R2016b or greater (https://mathworks.com/)
 
 ### Packages:

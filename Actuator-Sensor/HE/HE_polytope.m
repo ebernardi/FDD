@@ -78,7 +78,8 @@ f1 = double(f);
 delta1 = f1 - (A1*Xinit+B1*Uinit);
 
 % Euler discretization method
-A1d = (A1*Ts) + eye(nx); B1d = B1*Ts; delta1d = delta1*Ts;
+sys(1).Ad = (A1*Ts) + eye(nx); sys(1).Bd = B1*Ts; sys(1).deltad = delta1*Ts;
+sys(1).C = eye(ny, nx);
 
 %% Sistema 2 (Theta_1s = Theta_1s_min [K]; Theta_2s = Theta_2s_mid [K])
 Theta_1s = Theta_1s_min;
@@ -121,7 +122,8 @@ f2 = double(f);
 delta2 = f2 - (A2*Xinit+B2*Uinit);
 
 % Euler discretization method
-A2d = (A2*Ts) + eye(nx); B2d = B2*Ts; delta2d = delta2*Ts;
+sys(2).Ad = (A2*Ts) + eye(nx); sys(2).Bd = B2*Ts; sys(2).deltad = delta2*Ts;
+sys(2).C = eye(ny, nx);
 
 %% Sistema 3 (Theta_1s = Theta_1s_min [K]; Theta_2s = Theta_2s_max [K])
 Theta_1s = Theta_1s_min;
@@ -164,7 +166,8 @@ f3 = double(f);
 delta3 = f3 - (A3*Xinit+B3*Uinit);
 
 % Euler discretization method
-A3d = (A3*Ts) + eye(nx); B3d = B3*Ts; delta3d = delta3*Ts;
+sys(3).Ad = (A3*Ts) + eye(nx); sys(3).Bd = B3*Ts; sys(3).deltad = delta3*Ts;
+sys(3).C = eye(ny, nx);
 
 %% Sistema 4 (Theta_1s = Theta_1s_mid [K]; Theta_2s = Theta_2s_min [K])
 Theta_1s = Theta_1s_mid;
@@ -207,7 +210,8 @@ f4 = double(f);
 delta4 = f4 - (A4*Xinit+B4*Uinit);
 
 % Euler discretization method
-A4d = (A4*Ts) + eye(nx); B4d = B4*Ts; delta4d = delta4*Ts;
+sys(4).Ad = (A4*Ts) + eye(nx); sys(4).Bd = B4*Ts; sys(4).deltad = delta4*Ts;
+sys(4).C = eye(ny, nx);
 
 %% Sistema 5 (Theta_1s = Theta_1s_mid [K]; Theta_2s = Theta_2s_mid [K])
 Theta_1s = Theta_1s_mid;
@@ -250,7 +254,8 @@ f5 = double(f);
 delta5 = f5 - (A5*Xinit+B5*Uinit);
 
 % Euler discretization method
-A5d = (A5*Ts) + eye(nx); B5d = B5*Ts; delta5d = delta5*Ts;
+sys(5).Ad = (A5*Ts) + eye(nx); sys(5).Bd = B5*Ts; sys(5).deltad = delta5*Ts;
+sys(5).C = eye(ny, nx);
 
 %% Sistema 6 (Theta_1s = Theta_1s_mid [K]; Theta_2s = Theta_2s_max [K])
 Theta_1s = Theta_1s_mid;
@@ -293,7 +298,8 @@ f6 = double(f);
 delta6 = f6 - (A6*Xinit+B6*Uinit);
 
 % Euler discretization method
-A6d = (A6*Ts) + eye(nx); B6d = B6*Ts; delta6d = delta6*Ts;
+sys(6).Ad = (A6*Ts) + eye(nx); sys(6).Bd = B6*Ts; sys(6).deltad = delta6*Ts;
+sys(6).C = eye(ny, nx);
 
 %% Sistema 7 (Theta_1s = Theta_1s_max [K]; Theta_2s = Theta_2s_min [K])
 Theta_1s = Theta_1s_max;
@@ -336,7 +342,8 @@ f7 = double(f);
 delta7 = f7 - (A7*Xinit+B7*Uinit);
 
 % Euler discretization method
-A7d = (A7*Ts) + eye(nx); B7d = B7*Ts; delta7d = delta7*Ts;
+sys(7).Ad = (A7*Ts) + eye(nx); sys(7).Bd = B7*Ts; sys(7).deltad = delta7*Ts;
+sys(7).C = eye(ny, nx);
 
 %% Sistema 8 (Theta_1s = Theta_1s_max [K]; Theta_2s = Theta_2s_mid [K])
 Theta_1s = Theta_1s_max;
@@ -379,7 +386,8 @@ f8 = double(f);
 delta8 = f8 - (A8*Xinit+B8*Uinit);
 
 % Euler discretization method
-A8d = (A8*Ts) + eye(nx); B8d = B8*Ts; delta8d = delta8*Ts;
+sys(8).Ad = (A8*Ts) + eye(nx); sys(8).Bd = B8*Ts; sys(8).deltad = delta8*Ts;
+sys(8).C = eye(ny, nx);
 
 %% Sistema 9 (Theta_1s = Theta_1s_max [K]; Theta_2s = Theta_2s_max [K])
 Theta_1s = Theta_1s_max;
@@ -422,4 +430,5 @@ f9 = double(f);
 delta9 = f9 - (A9*Xinit+B9*Uinit);
 
 % Euler discretization method
-A9d = (A9*Ts) + eye(nx); B9d = B9*Ts; delta9d = delta9*Ts;
+sys(9).Ad = (A9*Ts) + eye(nx); sys(9).Bd = B9*Ts; sys(9).deltad = delta9*Ts;
+sys(9).C = eye(ny, nx);

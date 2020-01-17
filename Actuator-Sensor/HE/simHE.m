@@ -5,6 +5,10 @@ close all;
 %% Load polytope and observer matrices
 load polyObs
 
+% Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
+options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
+	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
+
 %% Simulation parameters
 Time = 720.1;                        % Simulation end time [min] (12 h)
 Ts = 0.05;                              % Sample time [min] (3 seg)
@@ -24,6 +28,7 @@ Fsen_1 = 2.5; Fsen_2 = -3.5;	% Sensor fault magnitude [0.5% 0.5%]
 % 
 % run HE_polytope;
 % M = 9;
+% N = 2;
 % 
 % % Observers start point
 % Theta_1s = Theta_1s_mid;     % Temperatura de salida de fluido 1 (K)
@@ -38,8 +43,7 @@ Fsen_1 = 2.5; Fsen_2 = -3.5;	% Sensor fault magnitude [0.5% 0.5%]
 % x0 = [Theta_1s; Theta_2s; Theta_p];
 % 
 % % Reduced-order unknown input observer
-% run RUIO;
-% N = 2;
+% run HE_DLPV_RUIO;
 % 
 % % Unknown input output observer
 % run HE_DLPV_UIOO;
@@ -71,14 +75,8 @@ end
 
 %% Parámetros del PID
 ek = [0; 0]; ek_1 = [0; 0];
-% Kr = [0.5; 0.5]; 
-% Ki = [1.25; 1.25];
 Kr = [-1; 5e-2]; 
 Ki = [-2; 2e-1];
-
-% Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
-options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
-	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
 
 %% Simulation Setup
 U = zeros(nu, Nsim);                   % Control Input
@@ -108,7 +106,7 @@ FQ2 = zeros(1, Nsim);                  % Fault detect Q2
 
 % UIOO 1
 Z1 = zeros(nx, Nsim+1);              % Observer states
-Yfail1 = zeros(p, Nsim);                % Monitorated outputs
+Yfail1 = zeros(N, Nsim);                % Monitorated outputs
 X_UIOO1 = zeros(nx, Nsim);         % Estimated states
 Y_UIOO1 = zeros(nx, Nsim);         % Estimated outputs
 res1 = zeros(nx, Nsim);                % Residue
@@ -118,7 +116,7 @@ FO1 = zeros(1, Nsim);                  % Fault detect S1
 
 % UIOO 2
 Z2 = zeros(nx, Nsim+1);              % Observer states
-Yfail2 = zeros(p, Nsim);                % Monitorated outputs
+Yfail2 = zeros(N, Nsim);                % Monitorated outputs
 X_UIOO2 = zeros(nx, Nsim);         % Estimated states
 Y_UIOO2 = zeros(nx, Nsim);         % Estimated outputs
 res2 = zeros(nx, Nsim);                % Residue
@@ -146,7 +144,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         Ufails(:, k) = [0; 0];
 
         if tk > 30 && tk < 130
-            Ufails(:, k) = [Fact_1; 0]; %-Fact_1*(exp(-(tk-30)/10)); 0];
+            Ufails(:, k) = [Fact_1; 0];
             Ufail(:, k) = U(:, k) + Ufails(:, k);
         end
         
@@ -198,40 +196,19 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         mu_in(:, k) = membership(Yfail(:, k), Theta_1s_min, Theta_1s_mid, Theta_1s_max, Theta_2s_min, Theta_2s_mid, Theta_2s_max);
       
         %% LPV-RUIO 1
-        Phi_1(:, k+1) = mu_out(1, k)*(H1_K1*Phi_1(:, k) + H1_L1_ast*Yfail(:, k) + H1_B1_bar_1*U(:, k) + H1_delta1_bar_1) ...
-                              + mu_out(2, k)*(H1_K2*Phi_1(:, k) + H1_L2_ast*Yfail(:, k) + H1_B2_bar_1*U(:, k) + H1_delta2_bar_1) ...
-                              + mu_out(3, k)*(H1_K3*Phi_1(:, k) + H1_L3_ast*Yfail(:, k) + H1_B3_bar_1*U(:, k) + H1_delta3_bar_1) ...
-                              + mu_out(4, k)*(H1_K4*Phi_1(:, k) + H1_L4_ast*Yfail(:, k) + H1_B4_bar_1*U(:, k) + H1_delta4_bar_1) ...
-                              + mu_out(5, k)*(H1_K5*Phi_1(:, k) + H1_L5_ast*Yfail(:, k) + H1_B5_bar_1*U(:, k) + H1_delta5_bar_1) ...
-                              + mu_out(6, k)*(H1_K6*Phi_1(:, k) + H1_L6_ast*Yfail(:, k) + H1_B6_bar_1*U(:, k) + H1_delta6_bar_1) ...
-                              + mu_out(7, k)*(H1_K7*Phi_1(:, k) + H1_L7_ast*Yfail(:, k) + H1_B7_bar_1*U(:, k) + H1_delta7_bar_1) ...
-                              + mu_out(8, k)*(H1_K8*Phi_1(:, k) + H1_L8_ast*Yfail(:, k) + H1_B8_bar_1*U(:, k) + H1_delta8_bar_1) ...
-                              + mu_out(9, k)*(H1_K9*Phi_1(:, k) + H1_L9_ast*Yfail(:, k) + H1_B9_bar_1*U(:, k) + H1_delta9_bar_1);
-
-        X_UIO1(:, k) = mu_out(1, k)*(H1_T1*[Phi_1(:, k); H1_U1_1*Yfail(:, k)-H1_U1_1*H1_C1_tilde_1*Phi_1(:, k)]) ...
-                            + mu_out(2, k)*(H1_T2*[Phi_1(:, k); H1_U2_1*Yfail(:, k)-H1_U2_1*H1_C2_tilde_1*Phi_1(:, k)]) ...
-                            + mu_out(3, k)*(H1_T3*[Phi_1(:, k); H1_U3_1*Yfail(:, k)-H1_U3_1*H1_C3_tilde_1*Phi_1(:, k)]) ...
-                            + mu_out(4, k)*(H1_T4*[Phi_1(:, k); H1_U4_1*Yfail(:, k)-H1_U4_1*H1_C4_tilde_1*Phi_1(:, k)]) ...
-                            + mu_out(5, k)*(H1_T5*[Phi_1(:, k); H1_U5_1*Yfail(:, k)-H1_U5_1*H1_C5_tilde_1*Phi_1(:, k)]) ...
-                            + mu_out(6, k)*(H1_T6*[Phi_1(:, k); H1_U6_1*Yfail(:, k)-H1_U6_1*H1_C6_tilde_1*Phi_1(:, k)]) ...
-                            + mu_out(7, k)*(H1_T7*[Phi_1(:, k); H1_U7_1*Yfail(:, k)-H1_U7_1*H1_C7_tilde_1*Phi_1(:, k)]) ...
-                            + mu_out(8, k)*(H1_T8*[Phi_1(:, k); H1_U8_1*Yfail(:, k)-H1_U8_1*H1_C8_tilde_1*Phi_1(:, k)]) ...
-                            + mu_out(9, k)*(H1_T9*[Phi_1(:, k); H1_U9_1*Yfail(:, k)-H1_U9_1*H1_C9_tilde_1*Phi_1(:, k)]);
+        Phi_1(:, k+1) = zeros(N, 1);
+        X_UIO1(:, k) = zeros(nx, 1);
+        Fact1(k) = zeros(1, 1);
+        for i = 1:M
+            Phi_1(:, k+1) = Phi_1(:, k+1) + mu_out(i, k)*(RUIO(1).O(i).K*Phi_1(:, k) + RUIO(1).O(i).L_ast*Yfail(:, k) + RUIO(1).O(i).B_bar_1*U(:, k) + RUIO(1).O(i).delta_bar_1);
+            X_UIO1(:, k) = X_UIO1(:, k) + mu_out(i, k)*(RUIO(1).O(i).T*[Phi_1(:, k); RUIO(1).O(i).U_1*Yfail(:, k)-RUIO(1).O(i).U_1*RUIO(1).O(i).C_tilde_1*Phi_1(:, k)]);
+            
+            Fact1(k) = Fact1(k) + mu_out(i, k)*(RUIO(1).O(i).U_1*(X(:, k+1) - RUIO(1).O(i).C_tilde_1*Phi_1(:, k+1)) + RUIO(1).O(i).A_bar_22*RUIO(1).O(i).U_1*(RUIO(1).O(i).C_tilde_1*Phi_1(:, k) - Yfail(:, k)) - RUIO(1).O(i).A_bar_21*Phi_1(:, k) - RUIO(1).O(i).B_bar_2*U(:, k) -  RUIO(1).O(i).delta_bar_2);
+        end
 
         % Error norm 1
         Error_1(k) = sqrt((X_UIO1(1, k)-Yfail(1, k))^2 + (X_UIO1(2, k)-Yfail(2, k))^2 + (X_UIO1(3, k)-Yfail(3, k))^2);
         
-        % Fault estimation 1
-        Fact1(k) = mu_out(1, k)*(H1_U1_1*(X(:, k+1) - H1_C1_tilde_1*Phi_1(:, k+1)) + H1_A1_bar_22*H1_U1_1*(H1_C1_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A1_bar_21*Phi_1(:, k) - H1_B1_bar_2*U(:, k) -  H1_delta1_bar_2) ...
-                      + mu_out(2, k)*(H1_U2_1*(X(:, k+1) - H1_C2_tilde_1*Phi_1(:, k+1)) + H1_A2_bar_22*H1_U2_1*(H1_C2_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A2_bar_21*Phi_1(:, k) - H1_B2_bar_2*U(:, k) -  H1_delta2_bar_2) ...
-                      + mu_out(3, k)*(H1_U3_1*(X(:, k+1) - H1_C3_tilde_1*Phi_1(:, k+1)) + H1_A3_bar_22*H1_U3_1*(H1_C3_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A3_bar_21*Phi_1(:, k) - H1_B3_bar_2*U(:, k) -  H1_delta3_bar_2) ...
-                      + mu_out(4, k)*(H1_U4_1*(X(:, k+1) - H1_C4_tilde_1*Phi_1(:, k+1)) + H1_A4_bar_22*H1_U4_1*(H1_C4_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A4_bar_21*Phi_1(:, k) - H1_B4_bar_2*U(:, k) -  H1_delta4_bar_2) ...
-                      + mu_out(5, k)*(H1_U5_1*(X(:, k+1) - H1_C5_tilde_1*Phi_1(:, k+1)) + H1_A5_bar_22*H1_U5_1*(H1_C5_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A5_bar_21*Phi_1(:, k) - H1_B5_bar_2*U(:, k) -  H1_delta5_bar_2) ...
-                      + mu_out(6, k)*(H1_U6_1*(X(:, k+1) - H1_C6_tilde_1*Phi_1(:, k+1)) + H1_A6_bar_22*H1_U6_1*(H1_C6_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A6_bar_21*Phi_1(:, k) - H1_B6_bar_2*U(:, k) -  H1_delta6_bar_2) ...                  
-                      + mu_out(7, k)*(H1_U7_1*(X(:, k+1) - H1_C7_tilde_1*Phi_1(:, k+1)) + H1_A7_bar_22*H1_U7_1*(H1_C7_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A7_bar_21*Phi_1(:, k) - H1_B7_bar_2*U(:, k) -  H1_delta7_bar_2) ...
-                      + mu_out(8, k)*(H1_U8_1*(X(:, k+1) - H1_C8_tilde_1*Phi_1(:, k+1)) + H1_A8_bar_22*H1_U8_1*(H1_C8_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A8_bar_21*Phi_1(:, k) - H1_B8_bar_2*U(:, k) -  H1_delta8_bar_2) ...
-                      + mu_out(9, k)*(H1_U9_1*(X(:, k+1) - H1_C9_tilde_1*Phi_1(:, k+1)) + H1_A9_bar_22*H1_U9_1*(H1_C9_tilde_1*Phi_1(:, k) - Yfail(:, k)) - H1_A9_bar_21*Phi_1(:, k) - H1_B9_bar_2*U(:, k) -  H1_delta9_bar_2);
-
         if Error_1(k) > threshold(1, k)
             FQ1(k) = true;
         else
@@ -239,39 +216,18 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
                   
         %% LPV-RUIO 2
-        Phi_2(:, k+1) = mu_out(1, k)*(H2_K1*Phi_2(:, k) + H2_L1_ast*Yfail(:, k) + H2_B1_bar_1*U(:, k) + H2_delta1_bar_1) ...
-                              + mu_out(2, k)*(H2_K2*Phi_2(:, k) + H2_L2_ast*Yfail(:, k) + H2_B2_bar_1*U(:, k) + H2_delta2_bar_1) ...
-                              + mu_out(3, k)*(H2_K3*Phi_2(:, k) + H2_L3_ast*Yfail(:, k) + H2_B3_bar_1*U(:, k) + H2_delta3_bar_1) ...
-                              + mu_out(4, k)*(H2_K4*Phi_2(:, k) + H2_L4_ast*Yfail(:, k) + H2_B4_bar_1*U(:, k) + H2_delta4_bar_1) ...
-                              + mu_out(5, k)*(H2_K5*Phi_2(:, k) + H2_L5_ast*Yfail(:, k) + H2_B5_bar_1*U(:, k) + H2_delta5_bar_1) ...
-                              + mu_out(6, k)*(H2_K6*Phi_2(:, k) + H2_L6_ast*Yfail(:, k) + H2_B6_bar_1*U(:, k) + H2_delta6_bar_1) ...
-                              + mu_out(7, k)*(H2_K7*Phi_2(:, k) + H2_L7_ast*Yfail(:, k) + H2_B7_bar_1*U(:, k) + H2_delta7_bar_1) ...
-                              + mu_out(8, k)*(H2_K8*Phi_2(:, k) + H2_L8_ast*Yfail(:, k) + H2_B8_bar_1*U(:, k) + H2_delta8_bar_1) ...
-                              + mu_out(9, k)*(H2_K9*Phi_2(:, k) + H2_L9_ast*Yfail(:, k) + H2_B9_bar_1*U(:, k) + H2_delta9_bar_1);
-
-        X_UIO2(:, k) = mu_out(1, k)*(H2_T1*[Phi_2(:, k); H2_U1_1*Yfail(:, k)-H2_U1_1*H2_C1_tilde_1*Phi_2(:, k)]) ...
-                            + mu_out(2, k)*(H2_T2*[Phi_2(:, k); H2_U2_1*Yfail(:, k)-H2_U2_1*H2_C2_tilde_1*Phi_2(:, k)]) ...
-                            + mu_out(3, k)*(H2_T3*[Phi_2(:, k); H2_U3_1*Yfail(:, k)-H2_U3_1*H2_C3_tilde_1*Phi_2(:, k)]) ...
-                            + mu_out(4, k)*(H2_T4*[Phi_2(:, k); H2_U4_1*Yfail(:, k)-H2_U4_1*H2_C4_tilde_1*Phi_2(:, k)]) ...
-                            + mu_out(5, k)*(H2_T5*[Phi_2(:, k); H2_U5_1*Yfail(:, k)-H2_U5_1*H2_C5_tilde_1*Phi_2(:, k)]) ...
-                            + mu_out(6, k)*(H2_T6*[Phi_2(:, k); H2_U6_1*Yfail(:, k)-H2_U6_1*H2_C6_tilde_1*Phi_2(:, k)]) ...
-                            + mu_out(7, k)*(H2_T7*[Phi_2(:, k); H2_U7_1*Yfail(:, k)-H2_U7_1*H2_C7_tilde_1*Phi_2(:, k)]) ...
-                            + mu_out(8, k)*(H2_T8*[Phi_2(:, k); H2_U8_1*Yfail(:, k)-H2_U8_1*H2_C8_tilde_1*Phi_2(:, k)]) ...
-                            + mu_out(9, k)*(H2_T9*[Phi_2(:, k); H2_U9_1*Yfail(:, k)-H2_U9_1*H2_C9_tilde_1*Phi_2(:, k)]);
+        Phi_2(:, k+1) = zeros(N, 1);
+        X_UIO2(:, k) = zeros(nx, 1);
+        Fact2(k) = zeros(1, 1);
+        for i = 1:M
+            Phi_2(:, k+1) = Phi_2(:, k+1) + mu_out(i, k)*(RUIO(2).O(i).K*Phi_2(:, k) + RUIO(2).O(i).L_ast*Yfail(:, k) + RUIO(2).O(i).B_bar_1*U(:, k) + RUIO(2).O(i).delta_bar_1);
+            X_UIO2(:, k) = X_UIO2(:, k) + mu_out(i, k)*(RUIO(2).O(i).T*[Phi_2(:, k); RUIO(2).O(i).U_1*Yfail(:, k)-RUIO(2).O(i).U_1*RUIO(2).O(i).C_tilde_1*Phi_2(:, k)]);
+            
+            Fact2(k) = Fact2(k) + mu_out(i, k)*(RUIO(2).O(i).U_1*(X(:, k+1) - RUIO(2).O(i).C_tilde_1*Phi_2(:, k+1)) + RUIO(2).O(i).A_bar_22*RUIO(2).O(i).U_1*(RUIO(2).O(i).C_tilde_1*Phi_2(:, k) - Yfail(:, k)) - RUIO(2).O(i).A_bar_21*Phi_2(:, k) - RUIO(2).O(i).B_bar_2*U(:, k) -  RUIO(2).O(i).delta_bar_2);
+        end
                          
         % Error norm 2
         Error_2(k) = sqrt((X_UIO2(1, k)-Yfail(1, k))^2 + (X_UIO2(2, k)-Yfail(2, k))^2 + (X_UIO2(3, k)-Yfail(3, k))^2);
-        
-        % Fault estimation 2
-        Fact2(k) = mu_out(1, k)*(H2_U1_1*(X(:, k+1) - H2_C1_tilde_1*Phi_2(:, k+1)) + H2_A1_bar_22*H2_U1_1*(H2_C1_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A1_bar_21*Phi_2(:, k) - H2_B1_bar_2*U(:, k) -  H2_delta1_bar_2) ...
-                      + mu_out(2, k)*(H2_U2_1*(X(:, k+1) - H2_C2_tilde_1*Phi_2(:, k+1)) + H2_A2_bar_22*H2_U2_1*(H2_C2_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A2_bar_21*Phi_2(:, k) - H2_B2_bar_2*U(:, k) -  H2_delta2_bar_2) ...
-                      + mu_out(3, k)*(H2_U3_1*(X(:, k+1) - H2_C3_tilde_1*Phi_2(:, k+1)) + H2_A3_bar_22*H2_U3_1*(H2_C3_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A3_bar_21*Phi_2(:, k) - H2_B3_bar_2*U(:, k) -  H2_delta3_bar_2) ...
-                      + mu_out(4, k)*(H2_U4_1*(X(:, k+1) - H2_C4_tilde_1*Phi_2(:, k+1)) + H2_A4_bar_22*H2_U4_1*(H2_C4_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A4_bar_21*Phi_2(:, k) - H2_B4_bar_2*U(:, k) -  H2_delta4_bar_2) ...
-                      + mu_out(5, k)*(H2_U5_1*(X(:, k+1) - H2_C5_tilde_1*Phi_2(:, k+1)) + H2_A5_bar_22*H2_U5_1*(H2_C5_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A5_bar_21*Phi_2(:, k) - H2_B5_bar_2*U(:, k) -  H2_delta5_bar_2) ...
-                      + mu_out(6, k)*(H2_U6_1*(X(:, k+1) - H2_C6_tilde_1*Phi_2(:, k+1)) + H2_A6_bar_22*H2_U6_1*(H2_C6_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A6_bar_21*Phi_2(:, k) - H2_B6_bar_2*U(:, k) -  H2_delta6_bar_2) ...                  
-                      + mu_out(7, k)*(H2_U7_1*(X(:, k+1) - H2_C7_tilde_1*Phi_2(:, k+1)) + H2_A7_bar_22*H2_U7_1*(H2_C7_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A7_bar_21*Phi_2(:, k) - H2_B7_bar_2*U(:, k) -  H2_delta7_bar_2) ...
-                      + mu_out(8, k)*(H2_U8_1*(X(:, k+1) - H2_C8_tilde_1*Phi_2(:, k+1)) + H2_A8_bar_22*H2_U8_1*(H2_C8_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A8_bar_21*Phi_2(:, k) - H2_B8_bar_2*U(:, k) -  H2_delta8_bar_2) ...
-                      + mu_out(9, k)*(H2_U9_1*(X(:, k+1) - H2_C9_tilde_1*Phi_2(:, k+1)) + H2_A9_bar_22*H2_U9_1*(H2_C9_tilde_1*Phi_2(:, k) - Yfail(:, k)) - H2_A9_bar_21*Phi_2(:, k) - H2_B9_bar_2*U(:, k) -  H2_delta9_bar_2);
 
         if Error_2(k) > threshold(2, k)
             FQ2(k) = true;
@@ -280,20 +236,15 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end
         
         %% DLPV-UIOO 1
-        Yfail1(:, k) = T2_1*Yfail(:, k);
-        Z1(:, k+1) = mu_in(1, k)*(N1_1*Z1(:, k) + L1_1*Yfail1(:, k) + G1_1*U(:, k) + Tg1_1) ...
-                         + mu_in(2, k)*(N1_2*Z1(:, k) + L1_2*Yfail1(:, k) + G1_2*U(:, k) + Tg1_2) ...
-                         + mu_in(3, k)*(N1_3*Z1(:, k) + L1_3*Yfail1(:, k) + G1_3*U(:, k) + Tg1_3) ...
-                         + mu_in(4, k)*(N1_4*Z1(:, k) + L1_4*Yfail1(:, k) + G1_4*U(:, k) + Tg1_4) ...
-                         + mu_in(5, k)*(N1_5*Z1(:, k) + L1_5*Yfail1(:, k) + G1_5*U(:, k) + Tg1_5) ...
-                         + mu_in(6, k)*(N1_6*Z1(:, k) + L1_6*Yfail1(:, k) + G1_6*U(:, k) + Tg1_6) ...
-                         + mu_in(7, k)*(N1_7*Z1(:, k) + L1_7*Yfail1(:, k) + G1_7*U(:, k) + Tg1_7) ...
-                         + mu_in(8, k)*(N1_8*Z1(:, k) + L1_8*Yfail1(:, k) + G1_8*U(:, k) + Tg1_8) ...
-                         + mu_in(9, k)*(N1_9*Z1(:, k) + L1_9*Yfail1(:, k) + G1_9*U(:, k) + Tg1_9);
+        Yfail1(:, k) = UIOO(1).T2*Yfail(:, k);
+        Z1(:, k+1) = zeros(nx, 1);      
+        for i = 1:M
+            Z1(:, k+1) = Z1(:, k+1) + mu_in(i, k)*(UIOO(1).O(i).N*Z1(:, k) + UIOO(1).O(i).L*Yfail1(:, k) + UIOO(1).O(i).G*U(:, k) + UIOO(1).O(i).Tg);
+        end
 
-        X_UIOO1(:, k) = Z1(:, k) - E1*Yfail1(:, k);
+        X_UIOO1(:, k) = Z1(:, k) - UIOO(1).E*Yfail1(:, k);
         Y_UIOO1(:, k) = C*X_UIOO1(:, k);
-
+        
         % Residue 1
         res1(:, k) = Yfail(:, k) - Y_UIOO1(:, k);
         
@@ -307,18 +258,13 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         end        
 
         %% DLPV-UIOO 2
-        Yfail2(:, k) = T2_2*Yfail(:, k);
-        Z2(:, k+1) = mu_in(1, k)*(N2_1*Z2(:, k) + L2_1*Yfail2(:, k) + G2_1*U(:, k) + Tg2_1) ...
-                         + mu_in(2, k)*(N2_2*Z2(:, k) + L2_2*Yfail2(:, k) + G2_2*U(:, k) + Tg2_2) ...
-                         + mu_in(3, k)*(N2_3*Z2(:, k) + L2_3*Yfail2(:, k) + G2_3*U(:, k) + Tg2_3) ...
-                         + mu_in(4, k)*(N2_4*Z2(:, k) + L2_4*Yfail2(:, k) + G2_4*U(:, k) + Tg2_4) ...
-                         + mu_in(5, k)*(N2_5*Z2(:, k) + L2_5*Yfail2(:, k) + G2_5*U(:, k) + Tg2_5) ...
-                         + mu_in(6, k)*(N2_6*Z2(:, k) + L2_6*Yfail2(:, k) + G2_6*U(:, k) + Tg2_6) ...
-                         + mu_in(7, k)*(N2_7*Z2(:, k) + L2_7*Yfail2(:, k) + G2_7*U(:, k) + Tg2_7) ...
-                         + mu_in(8, k)*(N2_8*Z2(:, k) + L2_8*Yfail2(:, k) + G2_8*U(:, k) + Tg2_8) ...
-                         + mu_in(9, k)*(N2_9*Z2(:, k) + L2_9*Yfail2(:, k) + G2_9*U(:, k) + Tg2_9);
+        Yfail2(:, k) = UIOO(2).T2*Yfail(:, k);
+        Z2(:, k+1) = zeros(nx, 1);      
+        for i = 1:M
+            Z2(:, k+1) = Z2(:, k+1) + mu_in(i, k)*(UIOO(2).O(i).N*Z2(:, k) + UIOO(2).O(i).L*Yfail2(:, k) + UIOO(2).O(i).G*U(:, k) + UIOO(2).O(i).Tg);
+        end
 
-        X_UIOO2(:, k) = Z2(:, k) - E2*Yfail2(:, k);
+        X_UIOO2(:, k) = Z2(:, k) - UIOO(2).E*Yfail2(:, k);
         Y_UIOO2(:, k) = C*X_UIOO2(:, k);
         
         % Residue 2
@@ -381,13 +327,7 @@ for FTC = 0 % 0 - FTC is off; 1 - FTC is on
         ek_1 = ek;
         ek(1) = (Xsp(1, k) - Yfail(1, k));
         ek(2) = (Xsp(2, k) - Yfail(2, k));
-        % Only calefactor fluid
-%         u0(1) = 100;
-%         u0(2) = u0(2) + Kr(1)*(ek(1) - ek_1(1)) + Ts*Ki(1)*ek(1);
-        % Mixed control
-%         u0(1) = u0(1) + Kr(2)*(ek(2) - ek_1(2)) + Ts*Ki(2)*ek(2);
-%         u0(2) = u0(2) + Kr(1)*(ek(1) - ek_1(1)) + Ts*Ki(1)*ek(1);
-        % Direct control
+        % Controller
         u0(1) = u0(1) + Kr(1)*(ek(1) - ek_1(1)) + Ts*Ki(1)*ek(1);
         u0(2) = u0(2) + Kr(2)*(ek(2) - ek_1(2)) + Ts*Ki(2)*ek(2);
         U(:, k+1) = [u0(1); u0(2)];
