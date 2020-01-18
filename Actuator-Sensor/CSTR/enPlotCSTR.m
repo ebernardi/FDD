@@ -96,13 +96,13 @@ plot(t, Error1, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(3, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_V'); grid on
-axis([0 inf 0 3.5e-4])
+axis([0 inf 0 3e-4])
 subplot(212)
 plot(t, Error2, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(4, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_T'); grid on
-axis([0 inf 0 2.2e-2])
+axis([0 inf 0 1.2e-5])
 
 %% Actuator fault estimation
 fig = figure('Name', 'Actuator fault estimation');
@@ -134,7 +134,7 @@ ax = axes('Parent', fig, 'Position', [0.259 0.202 0.203 0.165], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, Fact2, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Ufails(2, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [440 500]); ylim(ax, [-5.1 -4.9]);
+xlim(ax, [440 500]); ylim(ax, [-5.15 -4.85]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create textarrow
