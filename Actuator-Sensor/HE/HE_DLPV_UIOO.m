@@ -2,8 +2,7 @@
 UIOO = struct;
 
 % Dimension of system matrices
-n = 3;
-p = 2;
+n = 3; p = 2;
 
 for j = 1:N
     UIOO(j).H = zeros(size(sys(1).C));
