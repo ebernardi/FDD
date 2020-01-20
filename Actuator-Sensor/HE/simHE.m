@@ -13,7 +13,7 @@ options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
 	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
 
 %% Simulation parameters
-Time = 720.1;                           % Simulation end time [min] (12 h)
+Time = 720.1;                          % Simulation end time [min] (12 h)
 Ts = 0.05;                                % Sample time [min] (3 seg)
 Nsim = Time/Ts;                      % Simulation steps
 t = 0:Ts:Time-Ts;                     % Simulation time
@@ -102,17 +102,7 @@ for j = 1:N
     RUIO(j).delay = 0;                            % Detection delay
 end
 
-% UIOOs
-for j = 1:N
-    UIOO(j).Z = zeros(nx, Nsim+1);      % Observer states
-    UIOO(j).Ymon = zeros(N, Nsim);     % Monitorated outputs
-    UIOO(j).X = zeros(nx, Nsim);           % Estimated states
-    UIOO(j).Y = zeros(nx, Nsim);           % Estimated outputs
-    UIOO(j).res = zeros(nx, Nsim);        % Residue
-    UIOO(j).error = zeros(1, Nsim);       % Error
-    UIOO(j).Fsen = zeros(1, Nsim);       % Estimated sensor fault
-    UIOO(j).FO = zeros(1, Nsim);          % Fault detect S
-end
+
 
 % Initial states and inputs
 X(:, 1) = x0;

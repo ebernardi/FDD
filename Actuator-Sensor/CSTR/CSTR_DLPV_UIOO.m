@@ -12,7 +12,7 @@ for j = 1:N
         UIOO(j).alpha = 1;
     else
         UIOO(j).H(1, :) = sys(1).C(1, :);
-        UIOO(j).alpha = 0.9;
+        UIOO(j).alpha = 1;
     end
     UIOO(j).T2 = null(UIOO(j).H, 'r')';
     UIOO(j).J = UIOO(j).T2*sys(1).C;

@@ -77,13 +77,13 @@ print -dsvg figs/FDD_CSTR_input.svg
 %% RUIO error
 figure('Name', 'RUIO error')
 subplot(211)
-stairs(t, Error_1, 'b', 'LineWidth', 1.5)
+stairs(t, RUIO(1).error, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(1, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{Q_s}'); grid on
 axis([0 inf 0 2])
 subplot(212)
-stairs(t, Error_2, 'b', 'LineWidth', 1.5)
+stairs(t, RUIO(2).error, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(2, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{Q_c}'); grid on
@@ -92,22 +92,22 @@ axis([0 inf 0 0.3])
 %% UIOO error
 figure('Name', 'UIOO error')
 subplot(211)
-plot(t, Error1, 'b', 'LineWidth', 1.5)
+plot(t, UIOO(1).error, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(3, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_V'); grid on
-axis([0 inf 0 3e-4])
+axis([0 inf 0 3.2e-4])
 subplot(212)
-plot(t, Error2, 'b', 'LineWidth', 1.5)
+plot(t, UIOO(2).error, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(4, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_T'); grid on
-axis([0 inf 0 1.2e-5])
+axis([0 inf 0 2e-4])
 
 %% Actuator fault estimation
 fig = figure('Name', 'Actuator fault estimation');
 subplot(211)
-stairs(t, Fact1, 'Color', bordo, 'LineWidth', 1.5)
+stairs(t, RUIO(1).Fact, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Ufails(1, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('Q_s [l/min]'); grid on
@@ -115,7 +115,7 @@ axis([0 inf -0.5 5.5])
 leg = legend('Estimation', 'Fault');
 leg.ItemTokenSize = [20, 15];
 subplot(212)
-stairs(t, Fact2, 'Color', bordo, 'LineWidth', 1.5)
+stairs(t, RUIO(2).Fact, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Ufails(2, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('Q_c [l/min]'); grid on
@@ -124,7 +124,7 @@ axis([0 inf -5.5 0.25])
 % Create axes
 ax = axes('Parent', fig, 'Position', [0.4 0.69 0.226 0.2], 'FontSize', 8);
 hold(ax, 'on');
-plot(t, Fact1, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
+plot(t, RUIO(1).Fact, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Ufails(1, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
 xlim(ax, [29.5 35]); ylim(ax, [0 1.8]);
 box(ax, 'on'); grid(ax, 'on');
@@ -132,9 +132,9 @@ box(ax, 'on'); grid(ax, 'on');
 % Create axes
 ax = axes('Parent', fig, 'Position', [0.259 0.202 0.203 0.165], 'FontSize', 8);
 hold(ax, 'on');
-plot(t, Fact2, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
+plot(t, RUIO(2).Fact, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Ufails(2, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [440 500]); ylim(ax, [-5.15 -4.85]);
+xlim(ax, [440 500]); ylim(ax, [-5.1 -4.85]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create textarrow
@@ -148,7 +148,7 @@ print -dsvg figs/FDD_CSTR_RUIOestimation.svg
 %% Sensor fault estimation
 fig = figure('Name', 'Sensor fault estimation');
 subplot(211)
-stairs(t, Fsen1, 'Color', bordo, 'LineWidth', 1.5)
+stairs(t, UIOO(1).Fsen, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(1, :) - Y(1, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('V [l]'); grid on
@@ -156,7 +156,7 @@ axis([0 inf -2 0.25])
 leg = legend('Estimation', 'Fault', 'Location', 'SouthWest');
 leg.ItemTokenSize = [20, 15];
 subplot(212)
-stairs(t, Fsen2, 'Color', bordo, 'LineWidth', 1.5)
+stairs(t, UIOO(2).Fsen, 'Color', bordo, 'LineWidth', 1.5)
 hold on
 stairs(t, Yfail(3, :) - Y(3, :), '-.', 'Color', azul, 'LineWidth', 1.5); hold off
 xlabel('Time [min]'); ylabel('T [K]'); grid on
@@ -165,7 +165,7 @@ axis([0 inf -0.5 5])
 % Create axes
 ax = axes('Parent', fig, 'Position', [0.585 0.657 0.229 0.2], 'FontSize', 8);
 hold(ax, 'on');
-plot(t, Fsen1, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
+plot(t, UIOO(1).Fsen, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Yfail(1, :) - Y(1, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
 xlim(ax, [250 310]); ylim(ax, [-1.6 -1.2]);
 box(ax, 'on'); grid(ax, 'on');
@@ -173,7 +173,7 @@ box(ax, 'on'); grid(ax, 'on');
 % Create axes
 ax = axes('Parent', fig, 'Position', [0.319 0.229 0.266 0.165], 'FontSize', 8);
 hold(ax, 'on');
-plot(t, Fsen2, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
+plot(t, UIOO(2).Fsen, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Yfail(3, :) - Y(3, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
 xlim(ax, [610 660]); ylim(ax, [4.1 4.6]);
 box(ax, 'on'); grid(ax, 'on');
