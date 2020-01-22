@@ -2,15 +2,15 @@
 clc; clear; close all;
 yalmip('clear');
  
+% ODE options 'RelTol', 1e-6, 'AbsTol', 1e-6
+options = odeset ('RelTol', 1e-12, 'AbsTol', 1e-12, ...
+	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
+
 %% Load polytope and observer matrices
 % Type of observer(N° observer). Sub-observer(N° sub-observer). Matrix 
 RUIO = struct;
 UIOO = struct;
 load polyObs
-
-% Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
-options = odeset ('RelTol', 1e-12, 'AbsTol', 1e-12, ...
-	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
 
 %% Simulation parameters
 Time = 720.1;                           % Simulation end time
@@ -20,34 +20,29 @@ t = 0:Ts:Time-Ts;                      % Simulation time
 Fail_Q1 = 5; Fail_Q2 = 5;         % Actuator fault magnitude [5% 5%]
 Fail_S1 = 1.5; Fail_S2 = -4.5;  % Sensor fault magnitude [1.5% 0 1%]
 
-% %% Polytope model
-% V_min = 90;             % Volumen mínimo (m^3)
-% V_mid = 98;             % Volumen medio (m^3)
-% V_max = 110;          % Volumen máximo (m^3)
+%% Polytope model and observers
+% This section is commented on purpose to reduce simulation time (using pre-calculated observer matrices)
+% V_min = 90;             % Minimum volume (m^3)
+% V_mid = 98;             % Middle volume (m^3)
+% V_max = 110;          % Maximum volume (m^3)
 % 
-% % CA_min = 0.06;	% Concentración mínima (mol/l)
-% % CA_mid = 0.087;  % Concentración media (mol/l)
-% % CA_max = 0.12;   % Concentración máxima (mol/l)
-% 
-% Tr_min = 440;           % Temperatura mínima (°K)
-% Tr_mid = 445;           % Temperatura media (°K)
-% Tr_max = 450;          % Temperatura máxima (°K)
+% Tr_min = 440;           % Mimimum temperature (°K)
+% Tr_mid = 445;           % Middle temperature (°K)
+% Tr_max = 450;          % Maximum temperature (°K)
 % 
 % M = 9;                           % Number of observers
 % N = 2;                           % Number of membership functions
 % run CSTR_polytope;      % M^N Models
 % 
 % % Observer start point
-% Vr = V_mid;                 % [l] Volumen del reactor
-% Tr = Tr_min;                 % [K] Temperatura de salida
-% % Ca = CA_min;          % [mol/l] Concentración de salida
+% Vr = V_mid;                 % [l] Reactor volume
+% Tr = Tr_min;                 % [K] Output temperature
 % run CSTR_linear;
 % x0_obs = [Vr; Ca; Tr];
 % 
 % % System start point
-% Vr = V_mid;				    % [l] Volumen del reactor
-% Tr = Tr_min;                 % [K] Temperatura de salida
-% % Ca = CA_min;          % [mol/l] Concentración de salida
+% Vr = V_mid;				  % [l] Reactor volume
+% Tr = Tr_min;                 % [K] Output temperature
 % run CSTR_linear;
 % x0 = [Vr; Ca; Tr];
 % 

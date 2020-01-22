@@ -100,7 +100,7 @@ for i = 1:M
     % Inputs
     Uinit = [Q1; Q2];
 
-    % Matrices del sistema lineal
+    % Linear systems matrices
     A = subs(A_sym, {rho1, rho2, rhop, Cp1, Cp2, Cpp, Ar, h1, h2, V1, V2, Vp, theta1e, theta2e, theta1s, theta2s, thetap, q1, q2}, ...
               {Rho1, Rho2, Rhop, Cp_1, Cp_2, Cp_p, a, h_1, h_2, V_1, V_2, V_p, Theta_1e, Theta_2e, Xinit(1), Xinit(2), Xinit(3), Uinit(1), Uinit(2)});
     B = subs(B_sym, {rho1, rho2, rhop, Cp1, Cp2, Cpp, Ar, h1, h2, V1, V2, Vp, theta1e, theta2e, theta1s, theta2s, thetap, q1, q2}, ...

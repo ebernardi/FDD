@@ -2,7 +2,7 @@
 clc; clear; yalmip('clear');
 close all;
 
-% Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
+% ODE options 'RelTol', 1e-6, 'AbsTol', 1e-6
 options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
 	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
 
@@ -22,27 +22,27 @@ Fail_S1 = 2.5; Fail_S2 = -3.5;	% Sensor fault magnitude [0.5% 0.5%]
 
 %% Polytope model and observers
 % This section is commented to reduce simulation time (using pre-calculated observer matrices)
-% Theta_1s_min = 495;              % Temperatura mínima de salida de fluido 1 (K)
-% Theta_1s_mid = 497.32;         % Temperatura media de salida de fluido 1 (K)
-% Theta_1s_max = 500;             % Temperatura máxima de salida de fluido 1 (K)
+% Theta_1s_min = 495;              % Minimum output fluid 1 temperature (K)
+% Theta_1s_mid = 497.32;         % Middle output fluid 1 temperature (K)
+% Theta_1s_max = 500;             % Maximum output fluid 1 temperature (K)
 % 
-% Theta_2s_min = 680;              % Temperatura mínima de salida de fluido 2 (K)
-% Theta_2s_mid = 695.915;       % Temperatura media de salida de fluido 2 (K)
-% Theta_2s_max = 710;             % Temperatura máxima de salida de fluido 2 (K)
+% Theta_2s_min = 680;              % Minimum output fluid 2 temperature (K)
+% Theta_2s_mid = 695.915;       % Middle output fluid 2 temperature (K)
+% Theta_2s_max = 710;             % Maximum output fluid 2 temperature (K)
 % 
 % M = 9;                                      % Number of observers
 % N = 2;                                      % Number of membership functions
 % run HE_polytope;                     % M^N Models
 % 
 % % Observers start point
-% Theta_1s = Theta_1s_mid;     % Temperatura de salida de fluido 1 (K)
-% Theta_2s = Theta_2s_min;     % Temperatura de salida de fluido 2 (K)
+% Theta_1s = Theta_1s_mid;     % Output fluid 1 temperature (K)
+% Theta_2s = Theta_2s_min;     % Output fluid 2 temperature (K)
 % run HE_linear;
 % x0_obs = [Theta_1s; Theta_2s; Theta_p];
 % 
 % % System start point
-% Theta_1s = Theta_1s_min;     % Temperatura de salida de fluido 1 (K)
-% Theta_2s = Theta_2s_mid;     % Temperatura de salida de fluido 2 (K)
+% Theta_1s = Theta_1s_min;     % Output fluid 1 temperature (K)
+% Theta_2s = Theta_2s_mid;     % Output fluid 2 temperature (K)
 % run HE_linear;
 % x0 = [Theta_1s; Theta_2s; Theta_p];
 % 
