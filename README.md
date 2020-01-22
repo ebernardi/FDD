@@ -1,4 +1,4 @@
-# Observer-based Fault Detection and Diagnostic (FDD) scheme
+# Observer-based Fault Detection and Diagnostic (FDD)
 
 ## Abstract
 This code presents the design of a fault detection and diagnosis (FDD) scheme, composed from a bank of two types of dedicated observers, applied to linear parameter varying (LPV) systems. 
