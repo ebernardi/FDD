@@ -2,15 +2,15 @@
 clc; clear; yalmip('clear');
 close all;
 
+% Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
+options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
+	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
+
 %% Load polytope and observer matrices
 % Type of observer(N° observer). Sub-observer(N° sub-observer). Matrix 
 RUIO = struct;
 UIOO = struct;
 load polyObs
-
-% Ingreso las opciones de la ODE 'RelTol', 1e-6, 'AbsTol', 1e-6
-options = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, ...
-	'NormControl', 'on', 'InitialStep', 1.0e-4, 'MaxStep', 1.0);
 
 %% Simulation parameters
 Time = 720.1;                          % Simulation end time [min] (12 h)
@@ -20,7 +20,8 @@ t = 0:Ts:Time-Ts;                     % Simulation time
 Fail_Q1 = 5; Fail_Q2 = 0.43;    % Actuator fault magnitude [5%, 5%]
 Fail_S1 = 2.5; Fail_S2 = -3.5;	% Sensor fault magnitude [0.5% 0.5%]
 
-% %% Polytope model and observers
+%% Polytope model and observers
+% This section is commented to reduce simulation time (using pre-calculated observer matrices)
 % Theta_1s_min = 495;              % Temperatura mínima de salida de fluido 1 (K)
 % Theta_1s_mid = 497.32;         % Temperatura media de salida de fluido 1 (K)
 % Theta_1s_max = 500;             % Temperatura máxima de salida de fluido 1 (K)
@@ -101,8 +102,6 @@ for j = 1:N
     RUIO(j).FQ = zeros(1, Nsim);           % Fault detect Q
     RUIO(j).delay = 0;                            % Detection delay
 end
-
-
 
 % Initial states and inputs
 X(:, 1) = x0;
@@ -221,7 +220,7 @@ for k = 1:Nsim
     end
 
     UIOO(1).X(:, k) = UIOO(1).Z(:, k) - UIOO(1).E*UIOO(1).Ymon(:, k);
-    UIOO(1).Y(:, k) = C*UIOO(1).X(:, k);
+    UIOO(1).Y(:, k) = Cd*UIOO(1).X(:, k);
 
     % Residue 1
     UIOO(1).res(:, k) = Yfail(:, k) - UIOO(1).Y(:, k);
@@ -243,7 +242,7 @@ for k = 1:Nsim
     end
 
     UIOO(2).X(:, k) = UIOO(2).Z(:, k) - UIOO(2).E*UIOO(2).Ymon(:, k);
-    UIOO(2).Y(:, k) = C*UIOO(2).X(:, k);
+    UIOO(2).Y(:, k) = Cd*UIOO(2).X(:, k);
 
     % Residue 2
     UIOO(2).res(:, k) = Yfail(:, k) - UIOO(2).Y(:, k);

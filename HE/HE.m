@@ -1,46 +1,46 @@
-%% Modelo del Intercambiador de calor
+%% Heat Exchanger model
 function out = HE(x, u)
 	%
-	% Funcion del Intercambiador de calor
+	% Heat exchanger function
 	%
-	% x: Matriz de estados [Theta_1s Theta_2s Theta_p]
-	% u: Matriz de entradas [q1 q2]
-	% out: Matriz de salidas [dTheta_1s dTheta_2s dTheta_p]
+	% x: state matrix [Theta_1s Theta_2s Theta_p]
+	% u: input matrix [q1 q2]
+	% out: output matrix [dTheta_1s dTheta_2s dTheta_p]
 
-	% estados
+	% States
 	Theta_1s = x(1);
 	Theta_2s = x(2);
 	Theta_p = x(3);
 
-	% entradas
+	% Inputs
 	q1 = u(1);
 	q2 = u(2);
     
-    % El fluido 2 es calefactor
-    % El fluido 1 es de proceso
+    % Fluid 1 is cold process
+    % Fluid 2 is hot stream
+    	
+    % Parameters
+    Rho1 = 1;               % Fluid 1 density (kg/l)
+    Rho2 = 1;               % Fluid 2 density (kg/l)
+    Rhop = 7.874;        % Wall density (kg/l)
+    Cp_1 = 1000;         % Heat capacity fluid 1 (cal/kg K)
+    Cp_2 = 1000;         % Heat capacity fluid 2 (cal/kg K)
+    Cp_p = 1075.53;    % Wall specific heat (cal/kg K)
+    a = 0.881;              % Area HE (m^2)
+    h_1 = 32374;         % Heat transfer fluid 1 (cal/min K m^2)
+    h_2 = 14716.6667;% Heat transfer fluid 2 (cal/min K m^2)
+    V_1 = 16;               % Tube Volume (l)
+    V_2 = 2.11;            % Case Volume (l)
+    V_p = 1.19;            % Wall Volume (l)
+    Theta_1e = 480;    % Input Temp. fluid 1 (K)
+    Theta_2e = 900;    % Input Temp. fluid 2 (K)
 	
-    % Parámetros
-    rho1 = 1;               % Densidad del fluido 1 (kg/l)
-    rho2 = 1;               % Densidad del fluido 2 (kg/l)
-    rhop = 7.874;        % Densidad de la pared (kg/l)
-    Cp1 = 1000;         % Calor especifico del fluido 1 (cal/kg K)
-    Cp2 = 1000;          % Calor especifico del fluido 2 (cal/kg K)
-    Cpp = 1075.53;     % Calor especifico de la pared (cal/kg K)
-    A = 0.881;               % Area de intercambio (m^2)
-    h1 = 32374;          % Coeficiente de transferencia de calor para fluido 1 (cal/min K m^2)
-    h2 = 14716.6667; % Coeficiente de transferencia de calor para fluido 2 (cal/min K m^2)
-    V1 = 16;                % Volumen de tubos (l)
-    V2 = 2.11;             % Volumen de carcaza (l)
-    Vp = 1.19;             % Volumen de pared (l)
-    Theta_1e = 480;       % Temperatura de entrada de fluido 1 (K) (435 +/-10)
-    Theta_2e = 900;       % Temperatura de entrada de fluido 2 (K)
-	
-	% Balance de energía -> Temperatura de proceso
-	dTheta_1s = (q1*rho1*Cp1*(Theta_1e-Theta_1s) - A*h1*(Theta_1s-Theta_p))/(rho1*V1*Cp1);
-	% Balance de energía -> Temperatura pared
-	dTheta_2s = (q2*rho2*Cp2*(Theta_2e-Theta_2s) + A*h2*(Theta_p-Theta_2s))/(rho2*V2*Cp2);
-	% Balance de energía -> Temperatura de calefactor
-	dTheta_p = (A*h1*(Theta_1s-Theta_p) - A*h2*(Theta_p-Theta_2s))/(rhop*Cpp*Vp);
+	% Energy balance -> Process temperature
+	dTheta_1s = (q1*Rho1*Cp_1*(Theta_1e-Theta_1s) - a*h_1*(Theta_1s-Theta_p))/(Rho1*V_1*Cp_1);
+	% Energy balance -> Wall temperature
+	dTheta_2s = (q2*Rho2*Cp_2*(Theta_2e-Theta_2s) + a*h_2*(Theta_p-Theta_2s))/(Rho2*V_2*Cp_2);
+	% Energy balance -> Hot stream temperature
+	dTheta_p = (a*h_1*(Theta_1s-Theta_p) - a*h_2*(Theta_p-Theta_2s))/(Rhop*Cp_p*V_p);
 
  	out = [dTheta_1s; dTheta_2s; dTheta_p];
 end

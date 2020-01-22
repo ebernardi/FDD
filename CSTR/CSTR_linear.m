@@ -1,7 +1,7 @@
 %% CSTR Model
 syms qs qc V CA T
 
-% Parámetros
+% Parameters
 E_R = 1e4;              % [°K] (Energia de activación)
 Te = 350;               % [°K] (Temperatura de entrada del reactante)
 Tce = 350;              % [°K] (Temperatura del liquido refrigerante)

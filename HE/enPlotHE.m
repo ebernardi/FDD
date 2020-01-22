@@ -225,7 +225,7 @@ axis([0 inf -4 0.25])
 % Create axes
 ax = axes('Parent', fig, 'Position', [0.226 0.684 0.229 0.2], 'FontSize', 8);
 hold(ax, 'on');
-plot(t, UIOO(2).Fsen, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
+plot(t, UIOO(1).Fsen, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Yfail(1, :) - Y(1, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
 xlim(ax, [400 500]); ylim(ax, [2 3]);
 box(ax, 'on'); grid(ax, 'on');
