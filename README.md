@@ -5,11 +5,15 @@ Observer-based Fault Detection and Diagnostic scheme
 This code presents the design of a fault detection and diagnosis (FDD) scheme, composed from a bank of two types of dedicated observers, applied to linear parameter varying (LPV) systems. 
 * The first one uses a combination of reduced-order LPV observers to detect, isolate and estimate actuators faults.
 
-<div style="text-align:center"><img src="images/LPVRUIOBank.pdf" width="300"></div>
+<p align="center">
+	<img src="images/LPVRUIOBank.png" width="300">
+</p>
 
 * The second one consists of a set of full-order LPV unknown input observers (UIO) to detect, isolate and estimate sensors faults. 
 
-<div style="text-align:center"><img src="images/LPVUIOOBank.png" width="300"></div>
+<p align="center">
+	<img src="images/LPVUIOOBank.png" width="300">
+</p>
 
 The observer's design, convergence and its stability conditions are guaranteed in terms of linear matrix inequalities (LMI). Therefore, the main purpose of this work is to provide a novelty model-based observers' technique to detect and diagnose faults upon non-linear systems.
 
