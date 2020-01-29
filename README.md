@@ -24,4 +24,12 @@ Simulation results, based on two typical chemical industrial processes, are give
 - [Yalmip](https://yalmip.github.io/)
 - [Gurobi](https://www.gurobi.com/)
 - [SeDuMi](http://sedumi.ie.lehigh.edu/)
-- LMI Lab 
+- LMI Lab
+
+
+
+Send comments and questions to:
+
+ebernardi@sanfrancisco.utn.edu.ar
+
+Emanuel Bernardi
