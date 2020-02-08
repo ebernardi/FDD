@@ -14,7 +14,7 @@ This code presents the design of a fault detection and diagnosis (FDD) scheme, c
 
 The observer's design, convergence and its stability conditions are guaranteed in terms of linear matrix inequalities (LMI). Therefore, the main purpose of this work is to provide a novelty model-based observers' technique to detect and diagnose faults upon non-linear systems.
 
-Simulation results, based on two typical chemical industrial processes, are given to illustrate and discuss the implementation and performance of such approach.
+Simulation results, based on two typical chemical industrial processes, are given to illustrate the implementation and performance of such approach.
 
 ## Requirements
 - At least an i5-3337U CPU@2.7 GHz (2 Cores) with 6 GB of RAM.
