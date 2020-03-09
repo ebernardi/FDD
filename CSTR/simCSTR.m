@@ -21,7 +21,7 @@ Fail_Q1 = 5; Fail_Q2 = 5;         % Actuator fault magnitude [5% 5%]
 Fail_S1 = 1.5; Fail_S2 = -4.5;  % Sensor fault magnitude [1.5% 0 1%]
 
 %% Polytope model and observers
-% This section is commented on purpose to reduce simulation time (using pre-calculated observer matrices)
+% This section is comment on purpose to reduce simulation time (using pre-calculated observer matrices)
 % V_min = 90;             % Minimum volume (m^3)
 % V_mid = 98;             % Middle volume (m^3)
 % V_max = 110;          % Maximum volume (m^3)

@@ -192,7 +192,7 @@ plot(t, mu_out(7, :), 'm', 'linewidth', 1.5);
 plot(t, mu_out(8, :), 'Color', violeta, 'linewidth', 1.5);
 plot(t, mu_out(9, :), 'Color', amarillo, 'linewidth', 1.5); hold off;
 axis([0 inf 0 1]);
-xlabel('Tiempo [min]'); ylabel('\mu_i');% yticks([0 0.2 0.4 0.6 0.8 1]); yticklabels({'0', '0,2', '0,4', '0,6', '0,8', '1'});
+xlabel('Time [min]'); ylabel('\mu_i');% yticks([0 0.2 0.4 0.6 0.8 1]); yticklabels({'0', '0,2', '0,4', '0,6', '0,8', '1'});
 pbaspect([2 1 1]);
 leg = legend('\mu_1', '\mu_2', '\mu_3', '\mu_4', '\mu_5', '\mu_6', '\mu_7', '\mu_8', '\mu_9', 'Location', 'East');
 set(leg, 'Position', [0.748 0.307 0.075 0.418], 'FontSize', 8);
