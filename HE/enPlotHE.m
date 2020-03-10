@@ -88,13 +88,13 @@ stairs(t, RUIO(1).error, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(1, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{Q_1}'); grid on
-axis([0 inf 0 2.5])
+axis([0 inf 0 2.8])
 subplot(212)
 stairs(t, RUIO(2).error, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(2, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{Q_2}'); grid on
-axis([0 inf 0 1.3])
+axis([0 inf 0 1.4])
 leg = legend('Residue', 'Threshold');
 leg.ItemTokenSize = [20, 18];
 
@@ -132,7 +132,7 @@ hold on
 plot(t, threshold(3, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{\theta_1}'); grid on
 % axis([0 inf 0 6e-3])
-axis([0 inf 0 1.5])
+axis([0 inf 0 1.8])
 leg = legend('Residue', 'Threshold');
 leg.ItemTokenSize = [20, 18];
 subplot(212)
@@ -140,7 +140,7 @@ stairs(t, UIOO(2).error, 'b', 'LineWidth', 1.5)
 hold on
 plot(t, threshold(4, :), '-.r', 'linewidth', 1.5); hold off;
 xlabel('Time [min]'); ylabel('|e|_{\theta_2}'); grid on
-axis([0 inf 0 2.5])
+axis([0 inf 0 3.5])
 
 % Create textarrow
 annotation(fig, 'textarrow', [0.526 0.551], [0.659 0.623], ...

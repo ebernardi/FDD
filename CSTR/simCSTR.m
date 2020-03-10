@@ -277,7 +277,7 @@ for k = 1:Nsim
 
     %% Actuator fault estimation
     % Actuator fault 1
-    if ~RUIO(1).FQ(k) && RUIO(2).FQ(k) && ~UIOO(1).FO(k) && UIOO(2).FO(k)
+    if ~RUIO(1).FQ(k) && RUIO(2).FQ(k) && ~UIOO(1).FO(k) && ~UIOO(2).FO(k)
         if RUIO(1).delay
             RUIO(1).Fact(k) = RUIO(1).Fact(k);
         else

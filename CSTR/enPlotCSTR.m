@@ -126,7 +126,7 @@ ax = axes('Parent', fig, 'Position', [0.4 0.69 0.226 0.2], 'FontSize', 8);
 hold(ax, 'on');
 plot(t, RUIO(1).Fact, 'Color', bordo, 'linewidth', 1.5); hold on; grid on;
 plot(t, Ufails(1, :), '-.', 'Color', azul, 'linewidth', 1.5); hold off;
-xlim(ax, [29.5 35]); ylim(ax, [0 1.8]);
+xlim(ax, [29.5 32]); ylim(ax, [0 0.7]);
 box(ax, 'on'); grid(ax, 'on');
 
 % Create axes

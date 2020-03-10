@@ -66,7 +66,7 @@ Tau = 10;                % Convergence period
 mag_1 = 1.3e-1;     % Value Q1
 mag_2 = 5e-2;        % Value Q2
 mag_3 = 6e-2;        % Value O1
-mag_4 = 1.3e-1;     % Value O2
+mag_4 = 2e-1;     % Value O2
 
 threshold = zeros(4, Nsim);
 
