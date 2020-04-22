@@ -30,9 +30,10 @@ Fail_S1 = 1.5; Fail_S2 = -4.5;  % Sensor fault magnitude [1.5% 0 1%]
 % Tr_mid = 445;           % Middle temperature (°K)
 % Tr_max = 450;          % Maximum temperature (°K)
 % 
-% M = 9;                           % Number of observers
-% N = 2;                           % Number of membership functions
-% run CSTR_polytope;      % M^N Models
+% N = 2;                           % Number of parameters
+% L = 3;                            % Linearization points per parameter
+% M = L^N;                      % Number of models
+% run CSTR_polytope;      % M Models
 % 
 % % Observer start point
 % Vr = V_mid;                 % [l] Reactor volume

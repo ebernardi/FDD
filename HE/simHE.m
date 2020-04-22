@@ -30,9 +30,10 @@ Fail_S1 = 2.5; Fail_S2 = -3.5;	% Sensor fault magnitude [0.5% 0.5%]
 % Theta_2s_mid = 695.915;       % Middle output fluid 2 temperature (K)
 % Theta_2s_max = 710;             % Maximum output fluid 2 temperature (K)
 % 
-% M = 9;                                      % Number of observers
-% N = 2;                                      % Number of membership functions
-% run HE_polytope;                     % M^N Models
+% N = 2;                                      % Number of parameters
+% L = 3;                                       % Linearization points per parameter
+% M = L^N;                                 % Number of models
+% run HE_polytope;                     % M models
 % 
 % % Observers start point
 % Theta_1s = Theta_1s_mid;     % Output fluid 1 temperature (K)
