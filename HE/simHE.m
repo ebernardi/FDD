@@ -125,6 +125,8 @@ RUIO(2).X(:, 1) = x0_obs;
 UIOO(1).X(:, 1) = x0_obs;
 UIOO(2).X(:, 1) = x0_obs;
 
+elapsed_time = zeros(Nsim, 1) ;  % initialize the elapsed times 
+
 %% Simulation
 for k = 1:Nsim
     tk = k*Ts; % Simulation time
@@ -181,6 +183,8 @@ for k = 1:Nsim
         Xsp(2, k) = Theta_2s_min;
     end        
 
+	t_tic = tic ;   % to get time evaluated
+    
     %% membership
     mu_out(:, k) = membership(Yfail(:, k), Theta_1s_min, Theta_1s_mid, Theta_1s_max, Theta_2s_min, Theta_2s_mid, Theta_2s_max);
     mu_in(:, k) = membership(Yfail(:, k), Theta_1s_min, Theta_1s_mid, Theta_1s_max, Theta_2s_min, Theta_2s_mid, Theta_2s_max);
@@ -310,6 +314,9 @@ for k = 1:Nsim
     else
         UIOO(2).Fsen(k) = zeros(size(UIOO(1).res(2, k)));
     end
+    
+	t_tic = toc(t_tic) ;              % get time elapsed
+    elapsed_time(k) = t_tic ;   % store the time elapsed for the run
 
     %% PID
     u0(1) = U(1, k);
@@ -324,8 +331,25 @@ for k = 1:Nsim
 
 end
 
-% Save running data
+%% Get the overhead time 
+time_avg = mean(elapsed_time) ;
+msg = ['Mean time = ', num2str(time_avg)];
+disp(msg)
+msg = ['Mean time overhead = ', num2str(time_avg/(Ts*60)*100), '% @ Ts'];
+disp(msg)
+time_max = max(elapsed_time) ;
+msg = ['Max time = ', num2str(time_max)];
+disp(msg)
+msg = ['Max time overhead = ', num2str(time_max/(Ts*60)*100), '% @ Ts'];
+disp(msg)
+time_min = min(elapsed_time) ;
+msg = ['Min time = ', num2str(time_min)];
+disp(msg)
+msg = ['Min time overhead = ', num2str(time_min/(Ts*60)*100), '% @ Ts'];
+disp(msg)
+
+%% Save running data
 save runHE
 
-% Plots
+%% Plots
 run enPlotHE
