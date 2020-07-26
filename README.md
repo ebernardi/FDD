@@ -26,10 +26,9 @@ Simulation results, based on two typical chemical industrial processes, are give
 - [SeDuMi](http://sedumi.ie.lehigh.edu/)
 - LMI Lab
 
-
+## Paper info
+Emanuel Bernardi y Eduardo J. Adam. «Observer-based Fault Detection and Diagnosis Strategy for Industrial Processes». In: _Journal of the Franklin Institute_ (2020). Article accepted for publication (In press). ISSN: 0016-0032.
 
 Send comments and questions to:
 
-ebernardi@sanfrancisco.utn.edu.ar
-
-Emanuel Bernardi
+[Emanuel Bernardi](mailto:ebernardi@sanfrancisco.utn.edu.ar)
