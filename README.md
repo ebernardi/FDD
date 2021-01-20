@@ -1,12 +1,12 @@
 # Observer-based Fault Detection and Diagnostic (FDD)
 
 ## Abstract
-This code presents the design of a fault detection and diagnosis (FDD) scheme, composed from a bank of two types of observers, applied to linear parameter varying (LPV) systems. 
+This code presents the design of a fault detection and diagnosis (FDD) scheme, composed from a bank of two types of observers, applied to linear parameter varying (LPV) systems.
 
 * The first one uses a combination of reduced-order LPV observers (LPV-RUIO) to detect, isolate and estimate actuators faults.
 
 
-* The second one consists of a set of full-order LPV unknown input observers (LPV-UIOO) to detect, isolate and estimate sensors faults. 
+* The second one consists of a set of full-order LPV unknown input observers (LPV-UIOO) to detect, isolate and estimate sensors faults.
 
 <p align="center">
 	<img src="images/LPVRUIOBank.png" width="300"><img src="images/LPVUIOOBank.png" width="300">
@@ -27,7 +27,7 @@ Simulation results, based on two typical chemical industrial processes, are give
 - LMI Lab
 
 ## Paper info
-Emanuel Bernardi y Eduardo J. Adam. «Observer-based Fault Detection and Diagnosis Strategy for Industrial Processes». In: _Journal of the Franklin Institute_ (2020). Article accepted for publication (In press). ISSN: 0016-0032.
+Emanuel Bernardi y Eduardo J. Adam. «Observer-based Fault Detection and Diagnosis Strategy for Industrial Processes». In: _Journal of the Franklin Institute_ 357 (14 2020), pp. 9895-9922. ISSN: 0016-0032. DOI: 10.1016/j.jfranklin.2020.07.046.
 
 Send comments and questions to:
 

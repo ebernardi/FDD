@@ -14,7 +14,7 @@ load polyObs
 
 %% Simulation parameters
 Time = 720.1;                           % Simulation end time
-Ts = 0.05;                                 % Sample time [min]
+Ts = 0.05;                                 % Sample time [min]  (3 seg)
 Nsim = Time/Ts;                       % Simulation steps
 t = 0:Ts:Time-Ts;                      % Simulation time
 Fail_Q1 = 5; Fail_Q2 = 5;         % Actuator fault magnitude [5% 5%]
